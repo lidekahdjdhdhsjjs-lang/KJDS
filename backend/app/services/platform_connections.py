@@ -10,6 +10,8 @@ from app.connectors.shopee.auth import (
     build_authorize_url as build_shopee_authorize_url,
 )
 from app.core.config import settings
+from app.db import SessionLocal
+from app.models import StoreAuthorizationRecord
 from app.repositories.platform_connections import (
     disconnect_platform as disconnect_platform_record,
     get_pending_state,
@@ -86,7 +88,9 @@ async def _exchange_authorization_code(platform: PlatformName, code: str):
 def _state_secret() -> str:
     if settings.platform_auth_state_secret:
         return settings.platform_auth_state_secret
-    return f"{settings.app_name}-dev-state-secret"
+    if settings.app_env in ("development", "test"):
+        return f"{settings.app_name}-dev-state-secret"
+    raise ValueError("PLATFORM_AUTH_STATE_SECRET must be set in production")
 
 
 def _generate_state_token(platform: PlatformName) -> str:
@@ -164,3 +168,63 @@ def list_store_authorizations_view(store_id: str) -> list[StoreAuthorizationView
 
 def get_store_health_view(store_id: str) -> StoreHealthStatusView:
     return get_store_health(store_id)
+
+
+def get_platform_connection_status(platform: PlatformName) -> dict:
+    """Return current connection status for frontend polling.
+
+    Returns dict with:
+      - platform: platform name
+      - status: 'disconnected' | 'pending' | 'connected' | 'error' | 'timeout'
+      - account_label: display name of connected account (if connected)
+      - error_message: error description (if error)
+      - pending_state: current HMAC state token (if pending)
+    """
+    with SessionLocal() as session:
+        from sqlalchemy import select
+
+        authorization = session.scalar(
+            select(StoreAuthorizationRecord)
+            .where(StoreAuthorizationRecord.platform == platform)
+        )
+
+        if authorization is None:
+            return {
+                "platform": platform,
+                "status": "disconnected",
+                "account_label": None,
+                "error_message": None,
+                "pending_state": None,
+            }
+
+        if authorization.status == "pending":
+            # Check if pending has expired
+            expires_at = authorization.pending_state_expires_at
+            if expires_at is not None:
+                from datetime import UTC
+                from datetime import datetime as dt
+                expires_at_utc = expires_at.replace(tzinfo=UTC) if expires_at.tzinfo is None else expires_at
+                if expires_at_utc < dt.now(UTC):
+                    return {
+                        "platform": platform,
+                        "status": "timeout",
+                        "account_label": None,
+                        "error_message": None,
+                        "pending_state": None,
+                    }
+            return {
+                "platform": platform,
+                "status": "pending",
+                "account_label": None,
+                "error_message": None,
+                "pending_state": authorization.pending_state,
+            }
+
+        # connected, error, or disconnected
+        return {
+            "platform": platform,
+            "status": authorization.status,
+            "account_label": authorization.account_label,
+            "error_message": authorization.last_error,
+            "pending_state": None,
+        }
