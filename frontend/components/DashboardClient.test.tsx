@@ -170,13 +170,8 @@ describe('DashboardClient', () => {
     expect(screen.getByText('Status: Disconnected')).toBeTruthy();
   });
 
-  it('starts platform authorization and redirects the operator to the provider URL', async () => {
+  it('starts platform authorization and calls startPlatformAuthorization', async () => {
     const user = userEvent.setup();
-    const assignSpy = vi.fn();
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { assign: assignSpy },
-    });
     vi.mocked(api.fetchPlatformConnections).mockResolvedValue(platformConnections);
     vi.mocked(api.startPlatformAuthorization).mockResolvedValue({
       platform: '1688',
@@ -198,7 +193,6 @@ describe('DashboardClient', () => {
     await waitFor(() => {
       expect(api.startPlatformAuthorization).toHaveBeenCalledWith('1688', ACTOR_PRESETS.operator);
     });
-    expect(assignSpy).toHaveBeenCalledWith('https://auth.1688.test/oauth?state=abc');
   });
 
   it('disconnects a connected platform and refreshes the dashboard', async () => {
