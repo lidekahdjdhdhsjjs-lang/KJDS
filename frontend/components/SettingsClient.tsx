@@ -5,13 +5,12 @@ import Link from 'next/link';
 import {
   type PlatformConnectionStatus,
   type PlatformConnectionsSummary,
-  type PlatformAuthorizationStartResponse,
   type ActingOperator,
   ACTOR_PRESETS,
   fetchPlatformConnections,
-  startPlatformAuthorization,
   disconnectPlatform,
 } from '@/lib/api';
+import { GuidedAuthModal } from '@/components/GuidedAuthModal';
 import { getUserFriendlyError } from './ErrorBoundary';
 
 type SettingsClientProps = {
@@ -40,18 +39,11 @@ export function SettingsClient({
   const [loadError, setLoadError] = useState<string | undefined>(initialLoadError);
   const [loadingPlatform, setLoadingPlatform] = useState<string | null>(null);
   const [actor] = useState<ActingOperator>(ACTOR_PRESETS.operator);
+  const [activeModalPlatform, setActiveModalPlatform] = useState<'shopee' | '1688' | null>(null);
 
-  const handleConnect = async (platform: 'shopee' | '1688') => {
+  const handleConnect = (platform: 'shopee' | '1688') => {
     setFeedback(undefined);
-    setLoadingPlatform(platform);
-    try {
-      const response: PlatformAuthorizationStartResponse = await startPlatformAuthorization(platform, actor);
-      window.location.assign(response.authorize_url);
-    } catch (error: unknown) {
-      const message = getUserFriendlyError(error);
-      setFeedback({ tone: 'error', text: message });
-      setLoadingPlatform(null);
-    }
+    setActiveModalPlatform(platform);
   };
 
   const handleDisconnect = async (platform: 'shopee' | '1688') => {
@@ -141,66 +133,79 @@ export function SettingsClient({
                 key={conn.platform}
                 className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3">
-                      <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-                        {label}
-                      </h2>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          isConnected
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                            : isPending
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                              : hasError
-                                ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
-                                : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300'
-                        }`}
-                      >
-                        {isConnected ? 'Connected' : isPending ? 'Pending' : hasError ? 'Error' : 'Disconnected'}
-                      </span>
+                {activeModalPlatform === conn.platform ? (
+                  <GuidedAuthModal
+                    platform={conn.platform}
+                    platformLabel={PLATFORM_LABELS[conn.platform]}
+                    platformColor={conn.platform === 'shopee' ? '#EE4D2D' : '#FF5001'}
+                    onStateChange={async (connected) => {
+                      const updated = await fetchPlatformConnections();
+                      setConnections(updated);
+                      setActiveModalPlatform(null);
+                    }}
+                  />
+                ) : (
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+                          {label}
+                        </h2>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            isConnected
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                              : isPending
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                : hasError
+                                  ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                  : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300'
+                          }`}
+                        >
+                          {isConnected ? 'Connected' : isPending ? 'Pending' : hasError ? 'Error' : 'Disconnected'}
+                        </span>
+                      </div>
+
+                      {isConnected && conn.account_label && (
+                        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                          {conn.account_label}
+                        </p>
+                      )}
+
+                      {hasError && conn.last_error && (
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                          {conn.last_error}
+                        </p>
+                      )}
+
+                      {conn.last_connected_at && (
+                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
+                          Last connected: {new Date(conn.last_connected_at).toLocaleString()}
+                        </p>
+                      )}
                     </div>
 
-                    {isConnected && conn.account_label && (
-                      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                        {conn.account_label}
-                      </p>
-                    )}
-
-                    {hasError && conn.last_error && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {conn.last_error}
-                      </p>
-                    )}
-
-                    {conn.last_connected_at && (
-                      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-500">
-                        Last connected: {new Date(conn.last_connected_at).toLocaleString()}
-                      </p>
-                    )}
+                    <div className="ml-4 flex gap-2">
+                      {isConnected ? (
+                        <button
+                          onClick={() => handleDisconnect(conn.platform)}
+                          disabled={isLoading}
+                          className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                        >
+                          {isLoading ? 'Disconnecting...' : 'Disconnect'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleConnect(conn.platform)}
+                          disabled={isLoading || isPending}
+                          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        >
+                          {isLoading ? 'Starting...' : isPending ? 'Pending...' : 'Connect'}
+                        </button>
+                      )}
+                    </div>
                   </div>
-
-                  <div className="ml-4 flex gap-2">
-                    {isConnected ? (
-                      <button
-                        onClick={() => handleDisconnect(conn.platform)}
-                        disabled={isLoading}
-                        className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                      >
-                        {isLoading ? 'Disconnecting...' : 'Disconnect'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleConnect(conn.platform)}
-                        disabled={isLoading || isPending}
-                        className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
-                      >
-                        {isLoading ? 'Starting...' : isPending ? 'Pending...' : 'Connect'}
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             );
           })}
