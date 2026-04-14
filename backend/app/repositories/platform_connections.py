@@ -402,7 +402,8 @@ def mark_platform_error(platform: PlatformName, error_message: str) -> PlatformC
         authorization.pending_state = None
         authorization.pending_state_expires_at = None
         authorization.access_token_plaintext = None
-        authorization.refresh_token_plaintext = None        authorization.capabilities = None
+        authorization.refresh_token_plaintext = None
+        authorization.capabilities = None
         health.auth_status = "error"
         health.auth_message = error_message
         health.incident_status = "warning"
@@ -443,7 +444,8 @@ def disconnect_platform(platform: PlatformName) -> PlatformConnectionStatus:
         authorization.pending_state = None
         authorization.pending_state_expires_at = None
         authorization.access_token_plaintext = None
-        authorization.refresh_token_plaintext = None        authorization.capabilities = None
+        authorization.refresh_token_plaintext = None
+        authorization.capabilities = None
         health.auth_status = "disconnected"
         health.auth_message = None
         health.overall_status = "warning"
