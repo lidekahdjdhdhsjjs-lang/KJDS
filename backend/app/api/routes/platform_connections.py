@@ -18,6 +18,7 @@ from app.schemas.platform_connections import (
 from app.services.platform_connections import (
     complete_platform_authorization,
     disconnect_platform_connection,
+    get_platform_connection_status,
     get_store_health_view,
     list_platform_connections_view,
     list_store_authorizations_view,
@@ -46,6 +47,18 @@ async def start_platform_connection_authorization(
     _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ) -> ApiResponse[PlatformAuthorizationStartResponse]:
     return ApiResponse(success=True, data=start_platform_authorization(platform))
+
+
+@router.get("/{platform}/status")
+async def get_connection_status(
+    platform: PlatformName,
+) -> ApiResponse[dict]:
+    """Get current platform connection status for polling.
+
+    No authentication required — this endpoint is publicly pollable during OAuth.
+    """
+    status = get_platform_connection_status(platform)
+    return ApiResponse(success=True, data=status)
 
 
 def _dashboard_redirect(platform: PlatformName, authorization_status: str) -> RedirectResponse:
