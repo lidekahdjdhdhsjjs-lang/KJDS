@@ -261,14 +261,10 @@ def _build_connection_from_authorization(authorization: StoreAuthorizationRecord
 def _ensure_platform_records(session, platform: PlatformName) -> PlatformConnectionStatus:
     store, authorization = _get_or_create_authorization(session, platform)
     health = _get_or_create_health(session, store.id, platform)
-    default_connection = _default_connection(platform)
 
     # Only initialize from defaults if the authorization has never been touched
     # (status is the initial "disconnected" and last_connected_at has never been set)
     if authorization.last_connected_at is None and authorization.status == "disconnected" and not authorization.connected:
-        # Fresh record - leave it disconnected, user must complete real OAuth
-        authorization.status = "disconnected"
-        authorization.connected = False
         health.auth_status = "disconnected"
         health.overall_status = "warning"
         health.last_checked_at = datetime.now(UTC)
