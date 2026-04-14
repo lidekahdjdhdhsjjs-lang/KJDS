@@ -252,6 +252,17 @@ export async function disconnectPlatform(
   return parseApiResponse<PlatformConnectionStatus>(response, `Failed to disconnect ${platform}`);
 }
 
+export async function refreshPlatformTokens(
+  platform: 'shopee' | '1688',
+  actor: ActingOperator = ACTOR_PRESETS.operator,
+): Promise<PlatformConnectionStatus> {
+  const response = await fetch(`${API_BASE}/platform-connections/${platform}/refresh`, {
+    method: 'POST',
+    headers: buildActorHeaders(actor),
+  });
+  return parseApiResponse<PlatformConnectionStatus>(response, `Failed to refresh ${platform} tokens`);
+}
+
 export async function approveDraft(draftId: string, actor: ActingOperator): Promise<void> {
   const response = await fetch(`${API_BASE}/review/${draftId}/approve`, {
     method: 'POST',

@@ -16,6 +16,7 @@ from app.repositories.platform_connections import (
     disconnect_platform as disconnect_platform_record,
     get_decrypted_tokens,
     get_pending_state,
+    get_platform_connection,
     get_store_health,
     list_platform_connections,
     list_store_authorizations,
@@ -126,9 +127,6 @@ def _verify_state_token(platform: PlatformName, state: str) -> None:
     # Re-compute HMAC and compare
     payload = f"{platform}:{nonce}:{expires_at_str}"
     expected = hmac_new(_state_secret().encode("utf-8"), payload.encode("utf-8"), sha256).hexdigest()
-    if not hmac_new(b"", b"", sha256).hexdigest().__class__(signature) == signature.__class__:
-        # Defensive: ensure we're comparing strings
-        pass
     if signature != expected:
         raise ValueError("Invalid state token signature")
 
@@ -212,8 +210,8 @@ async def refresh_platform_tokens(platform: PlatformName) -> PlatformConnectionS
         raise ValueError(f"No token expiry recorded for {platform}")
 
     # Only refresh if within 10 minutes of expiry or already expired
-    from datetime import UTC, timedelta as td
-    now = __import__("datetime").datetime.now(UTC)
+    from datetime import UTC, datetime as dt, timedelta as td
+    now = dt.now(UTC)
     if expires_at > now + td(minutes=10):
         # Token is still valid for more than 10 minutes, no refresh needed
         return get_platform_connection(platform)

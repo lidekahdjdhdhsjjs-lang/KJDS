@@ -39,6 +39,35 @@ def _raise_platform_connection_error(error: Exception) -> None:
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
 
 
+@router.get("/stores")
+async def list_stores_route(
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+) -> ApiResponse[StoreListResponse]:
+    items = list_stores_view()
+    return ApiResponse(success=True, data=StoreListResponse(items=items), meta={"count": len(items)})
+
+
+@router.get("/stores/{store_id}/authorizations")
+async def list_store_authorizations_route(
+    store_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+) -> ApiResponse[StoreAuthorizationsResponse]:
+    items = list_store_authorizations_view(store_id)
+    return ApiResponse(success=True, data=StoreAuthorizationsResponse(items=items), meta={"count": len(items)})
+
+
+@router.get("/stores/{store_id}/health")
+async def get_store_health_route(
+    store_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+) -> ApiResponse[StoreHealthResponse]:
+    try:
+        health = get_store_health_view(store_id)
+    except ValueError as error:
+        _raise_platform_connection_error(error)
+    return ApiResponse(success=True, data=StoreHealthResponse(item=health))
+
+
 @router.get("")
 async def list_platform_connections(
     _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
@@ -140,32 +169,3 @@ async def refresh_tokens_route(
     except ValueError as error:
         _raise_platform_connection_error(error)
     return ApiResponse(success=True, data=connection)
-
-
-@router.get("/stores")
-async def list_stores_route(
-    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
-) -> ApiResponse[StoreListResponse]:
-    items = list_stores_view()
-    return ApiResponse(success=True, data=StoreListResponse(items=items), meta={"count": len(items)})
-
-
-@router.get("/stores/{store_id}/authorizations")
-async def list_store_authorizations_route(
-    store_id: str,
-    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
-) -> ApiResponse[StoreAuthorizationsResponse]:
-    items = list_store_authorizations_view(store_id)
-    return ApiResponse(success=True, data=StoreAuthorizationsResponse(items=items), meta={"count": len(items)})
-
-
-@router.get("/stores/{store_id}/health")
-async def get_store_health_route(
-    store_id: str,
-    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
-) -> ApiResponse[StoreHealthResponse]:
-    try:
-        health = get_store_health_view(store_id)
-    except ValueError as error:
-        _raise_platform_connection_error(error)
-    return ApiResponse(success=True, data=StoreHealthResponse(item=health))
