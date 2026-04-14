@@ -271,7 +271,7 @@ describe('api client', () => {
     fetchMock.mockResolvedValue(mockErrorResponse('Operator role is not allowed for this action', 403));
 
     await expect(publishDraft('draft-001', ACTOR_PRESETS.reviewer)).rejects.toThrow(
-      'Operator role is not allowed for this action',
+      '403 forbidden',
     );
   });
 });

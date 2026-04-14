@@ -3,6 +3,7 @@ app/__init__.py
 app/db.py
 app/main.py
 app/models.py
+app/models_browser.py
 app/api/routes/__init__.py
 app/api/routes/dashboard.py
 app/api/routes/health.py
@@ -20,3 +21,8 @@ shopee_ai_ops_backend.egg-info/dependency_links.txt
 shopee_ai_ops_backend.egg-info/requires.txt
 shopee_ai_ops_backend.egg-info/top_level.txt
 tests/test_api.py
+tests/test_sprint2_additional_apis.py
+tests/test_sprint2_batches.py
+tests/test_sprint2_integration.py
+tests/test_sprint2_opportunities.py
+tests/test_sprint2_publish.py

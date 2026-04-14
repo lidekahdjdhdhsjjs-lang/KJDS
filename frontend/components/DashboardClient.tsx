@@ -247,6 +247,81 @@ export function DashboardClient({
         </div>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <Link
+            href="/procurement"
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: 8,
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Procurement
+          </Link>
+          <Link
+            href="/training-archive"
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: 8,
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Archives
+          </Link>
+          <Link
+            href="/agent-runs"
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: 8,
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Agents
+          </Link>
+          <Link
+            href="/batches"
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: 8,
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Batches
+          </Link>
+          <Link
+            href="/exceptions"
+            style={{
+              display: 'inline-block',
+              padding: '8px 16px',
+              borderRadius: 8,
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              textDecoration: 'none',
+              fontSize: 14,
+              fontWeight: 600,
+            }}
+          >
+            Exceptions
+          </Link>
+          <Link
             href="/settings/platform-connections"
             style={{
               display: 'inline-block',
@@ -281,6 +356,66 @@ export function DashboardClient({
         <DashboardCard label="Approved today" value={initialSummary.approved_today} />
         <DashboardCard label="Published today" value={initialSummary.published_today} />
         <DashboardCard label="Failed jobs" value={initialSummary.failed_jobs} />
+      </section>
+
+      {/* Quick Navigation Cards per spec.md section 7.1 */}
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginTop: 24 }}>
+        <Link
+          href="/batches"
+          style={{
+            padding: 20,
+            borderRadius: 12,
+            backgroundColor: '#fff',
+            border: '1px solid #e2e8f0',
+            textDecoration: 'none',
+            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
+          }}
+        >
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Batch Overview</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#2563eb' }}>Batches</div>
+        </Link>
+        <Link
+          href="/exceptions"
+          style={{
+            padding: 20,
+            borderRadius: 12,
+            backgroundColor: '#fff',
+            border: '1px solid #e2e8f0',
+            textDecoration: 'none',
+            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
+          }}
+        >
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Exception Alerts</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626' }}>Exceptions</div>
+        </Link>
+        <Link
+          href="/batches"
+          style={{
+            padding: 20,
+            borderRadius: 12,
+            backgroundColor: '#fff',
+            border: '1px solid #e2e8f0',
+            textDecoration: 'none',
+            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
+          }}
+        >
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>New Opportunities</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#22c55e' }}>Discover</div>
+        </Link>
+        <Link
+          href="/procurement"
+          style={{
+            padding: 20,
+            borderRadius: 12,
+            backgroundColor: '#fff',
+            border: '1px solid #e2e8f0',
+            textDecoration: 'none',
+            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
+          }}
+        >
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Profit & Costs</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: '#f97316' }}>Finance</div>
+        </Link>
       </section>
 
       <section

@@ -15,37 +15,64 @@ export default function HomePage() {
         <p style={{ fontSize: 18, lineHeight: 1.7, color: '#475569', marginTop: 18, maxWidth: 720 }}>
           This console is designed for beginner operators. Start from the dashboard to intake candidates, generate drafts, approve items, and publish approved listings through a supervised flow.
         </p>
-        <a
-          href="/dashboard"
-          style={{
-            display: 'inline-block',
-            marginTop: 24,
-            marginRight: 12,
-            padding: '12px 18px',
-            borderRadius: 12,
-            backgroundColor: '#2563eb',
-            color: '#fff',
-            textDecoration: 'none',
-            fontWeight: 700,
-          }}
-        >
-          Open operator dashboard
-        </a>
-        <a
-          href="/settings/platform-connections"
-          style={{
-            display: 'inline-block',
-            marginTop: 24,
-            padding: '12px 18px',
-            borderRadius: 12,
-            backgroundColor: '#f1f5f9',
-            color: '#475569',
-            textDecoration: 'none',
-            fontWeight: 700,
-          }}
-        >
-          Platform connections
-        </a>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 24 }}>
+          <a
+            href="/dashboard"
+            style={{
+              display: 'inline-block',
+              padding: '12px 18px',
+              borderRadius: 12,
+              backgroundColor: '#2563eb',
+              color: '#fff',
+              textDecoration: 'none',
+              fontWeight: 700,
+            }}
+          >
+            Open operator dashboard
+          </a>
+          <a
+            href="/batches"
+            style={{
+              display: 'inline-block',
+              padding: '12px 18px',
+              borderRadius: 12,
+              backgroundColor: '#22c55e',
+              color: '#fff',
+              textDecoration: 'none',
+              fontWeight: 700,
+            }}
+          >
+            Batch Dashboard
+          </a>
+          <a
+            href="/exceptions"
+            style={{
+              display: 'inline-block',
+              padding: '12px 18px',
+              borderRadius: 12,
+              backgroundColor: '#f97316',
+              color: '#fff',
+              textDecoration: 'none',
+              fontWeight: 700,
+            }}
+          >
+            Exceptions Center
+          </a>
+          <a
+            href="/settings/platform-connections"
+            style={{
+              display: 'inline-block',
+              padding: '12px 18px',
+              borderRadius: 12,
+              backgroundColor: '#f1f5f9',
+              color: '#475569',
+              textDecoration: 'none',
+              fontWeight: 700,
+            }}
+          >
+            Platform connections
+          </a>
+        </div>
       </div>
     </main>
   );

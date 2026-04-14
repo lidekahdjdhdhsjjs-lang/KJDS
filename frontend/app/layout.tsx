@@ -1,7 +1,15 @@
+import { Navigation } from '@/components/Navigation';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body style={{ margin: 0, fontFamily: 'Arial, sans-serif', backgroundColor: '#f8fafc' }}>
+        <ErrorBoundary>
+          <Navigation />
+          {children}
+        </ErrorBoundary>
+      </body>
     </html>
   );
 }

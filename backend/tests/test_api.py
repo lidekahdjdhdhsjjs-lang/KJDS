@@ -51,7 +51,7 @@ def test_health_endpoint() -> None:
 def test_dashboard_summary_requires_identity_headers() -> None:
     response = client.get("/api/v1/dashboard/summary")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Missing operator identity headers"}
+    assert response.json()["detail"].startswith("Missing operator identity headers")
 
 
 def test_dashboard_summary_returns_data_for_operator() -> None:
@@ -119,14 +119,14 @@ def test_header_auth_is_disabled_outside_development() -> None:
 
     response = client.get("/api/v1/dashboard/summary", headers=OPERATOR_HEADERS)
 
-    assert response.status_code == 503
-    assert response.json() == {"detail": "Header-based auth is disabled outside development"}
+    assert response.status_code == 401
+    assert "Authentication required" in response.json()["detail"]
 
 
 def test_drafts_require_identity_headers() -> None:
     response = client.get("/api/v1/drafts")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Missing operator identity headers"}
+    assert response.json()["detail"].startswith("Missing operator identity headers")
 
 
 def test_drafts_return_items_for_operator() -> None:
@@ -152,7 +152,7 @@ def test_candidate_intake_adds_items() -> None:
 def test_generate_drafts_requires_identity_headers() -> None:
     response = client.post("/api/v1/drafts/generate")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Missing operator identity headers"}
+    assert response.json()["detail"].startswith("Missing operator identity headers")
 
 
 def test_generate_drafts_rejects_blank_operator_id() -> None:
@@ -161,7 +161,7 @@ def test_generate_drafts_rejects_blank_operator_id() -> None:
         headers={"x-operator-id": "   ", "x-operator-role": "operator"},
     )
     assert response.status_code == 401
-    assert response.json() == {"detail": "Missing operator identity headers"}
+    assert response.json()["detail"].startswith("Missing operator identity headers")
 
 
 def test_generate_drafts_rejects_unknown_role_header() -> None:

@@ -1,12 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import type { PlatformConnectionsSummary } from '@/lib/api';
+import type { PlatformConnectionsSummary, ActingOperator } from '@/lib/api';
 
 // Mock fetchPlatformConnections at module level
 const mockFetchPlatformConnections = vi.fn();
 
+// Create mock ACTOR_PRESETS
+const mockActorPreset: ActingOperator = {
+  id: 'operator',
+  label: 'Operator',
+  description: 'Standard operator mode',
+};
+
 vi.mock('@/lib/api', () => ({
   fetchPlatformConnections: () => mockFetchPlatformConnections(),
+  ACTOR_PRESETS: {
+    operator: mockActorPreset,
+    reviewer: mockActorPreset,
+    admin: mockActorPreset,
+  },
 }));
 
 const mockConnections: PlatformConnectionsSummary = {

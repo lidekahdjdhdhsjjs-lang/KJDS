@@ -12,6 +12,7 @@ import {
   startPlatformAuthorization,
   disconnectPlatform,
 } from '@/lib/api';
+import { getUserFriendlyError } from './ErrorBoundary';
 
 type SettingsClientProps = {
   initialConnections: PlatformConnectionsSummary;
@@ -46,8 +47,8 @@ export function SettingsClient({
     try {
       const response: PlatformAuthorizationStartResponse = await startPlatformAuthorization(platform, actor);
       window.location.assign(response.authorize_url);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start authorization';
+    } catch (error: unknown) {
+      const message = getUserFriendlyError(error);
       setFeedback({ tone: 'error', text: message });
       setLoadingPlatform(null);
     }
@@ -64,8 +65,8 @@ export function SettingsClient({
         tone: 'success',
         text: `${PLATFORM_LABELS[platform]} disconnected successfully.`,
       });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to disconnect';
+    } catch (error: unknown) {
+      const message = getUserFriendlyError(error);
       setFeedback({ tone: 'error', text: message });
     } finally {
       setLoadingPlatform(null);
