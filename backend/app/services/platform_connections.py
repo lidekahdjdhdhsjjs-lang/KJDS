@@ -5,11 +5,9 @@ from time import time
 
 from app.connectors.alibaba1688.auth import (
     build_authorize_url as build_alibaba_authorize_url,
-    exchange_code as exchange_alibaba_code,
 )
 from app.connectors.shopee.auth import (
     build_authorize_url as build_shopee_authorize_url,
-    exchange_code as exchange_shopee_code,
 )
 from app.core.config import settings
 from app.repositories.platform_connections import (
@@ -77,10 +75,12 @@ def _build_authorize_url(platform: PlatformName, state: str) -> str:
     return build_alibaba_authorize_url(state)
 
 
-def _exchange_authorization_code(platform: PlatformName, code: str):
+async def _exchange_authorization_code(platform: PlatformName, code: str):
     if platform == "shopee":
-        return exchange_shopee_code(code)
-    return exchange_alibaba_code(code)
+        from app.connectors.shopee.auth import exchange_code
+        return await exchange_code(code)
+    from app.connectors.alibaba1688.auth import exchange_code
+    return await exchange_code(code)
 
 
 def _state_secret() -> str:
@@ -120,7 +120,7 @@ def start_platform_authorization(platform: PlatformName) -> PlatformAuthorizatio
     )
 
 
-def complete_platform_authorization(
+async def complete_platform_authorization(
     platform: PlatformName,
     state: str | None,
     code: str | None,
@@ -136,7 +136,7 @@ def complete_platform_authorization(
     if not code:
         raise ValueError("Missing authorization code")
 
-    result = _exchange_authorization_code(platform, code)
+    result = await _exchange_authorization_code(platform, code)
     return mark_platform_connected(
         platform,
         account_label=result.account.account_label,
