@@ -80,6 +80,8 @@ async def exchange_code(code: str) -> AuthorizationResult:
     expire_seconds = resp.get("expire_in", 14400)
 
     shop_id = str(resp.get("shop_id", ""))
+    if not shop_id:
+        raise ShopeeOAuthError("Token exchange response missing shop_id")
     shop_name = f"Shopee Shop {shop_id}"
     account_id = f"shopee-{shop_id}"
 

@@ -25,7 +25,10 @@ class ShopeeClient:
         if self._client is None:
             self._client = httpx.AsyncClient(
                 base_url=self.base_url,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self.access_token}",
+                },
                 timeout=30.0,
             )
         return self._client
@@ -34,6 +37,12 @@ class ShopeeClient:
         if self._client:
             await self._client.aclose()
             self._client = None
+
+    async def __aenter__(self) -> "ShopeeClient":
+        return self
+
+    async def __aexit__(self, *args) -> None:
+        await self.close()
 
     async def get_shop_info(self) -> dict:
         """Get shop information."""
