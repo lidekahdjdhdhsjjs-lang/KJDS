@@ -142,6 +142,12 @@ export function SettingsClient({
                       const updated = await fetchPlatformConnections();
                       setConnections(updated);
                       setActiveModalPlatform(null);
+                      if (connected) {
+                        setFeedback({
+                          tone: 'success',
+                          text: `${PLATFORM_LABELS[conn.platform]} 授权连接成功！`,
+                        });
+                      }
                     }}
                   />
                 ) : (

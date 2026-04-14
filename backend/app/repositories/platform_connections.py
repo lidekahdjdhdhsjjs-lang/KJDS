@@ -4,6 +4,7 @@ from uuid import uuid4
 from sqlalchemy import select
 
 from app.core.config import settings
+from app.core.crypto import decrypt_token, encrypt_token
 from app.db import SessionLocal
 from app.models import (
     DecisionAuditLogRecord,
@@ -204,8 +205,8 @@ def _sync_legacy_connection(
     record.last_error = connection.last_error
     record.authorize_url = connection.authorize_url
     record.pending_state = pending_state
-    record.access_token = access_token
-    record.refresh_token = refresh_token
+    record.access_token = encrypt_token(access_token)
+    record.refresh_token = encrypt_token(refresh_token)
     record.capabilities = _serialize_capabilities(connection.capabilities)
     session.flush()
     return record
@@ -357,8 +358,8 @@ def mark_platform_connected(
         authorization.authorize_url = None
         authorization.pending_state = None
         authorization.pending_state_expires_at = None
-        authorization.access_token_ciphertext = access_token
-        authorization.refresh_token_ciphertext = refresh_token
+        authorization.access_token_plaintext = encrypt_token(access_token)
+        authorization.refresh_token_plaintext = encrypt_token(refresh_token)
         authorization.capabilities = _serialize_capabilities(capabilities)
         health.auth_status = "connected"
         health.auth_message = None
@@ -400,9 +401,8 @@ def mark_platform_error(platform: PlatformName, error_message: str) -> PlatformC
         authorization.authorize_url = None
         authorization.pending_state = None
         authorization.pending_state_expires_at = None
-        authorization.access_token_ciphertext = None
-        authorization.refresh_token_ciphertext = None
-        authorization.capabilities = None
+        authorization.access_token_plaintext = None
+        authorization.refresh_token_plaintext = None        authorization.capabilities = None
         health.auth_status = "error"
         health.auth_message = error_message
         health.incident_status = "warning"
@@ -442,9 +442,8 @@ def disconnect_platform(platform: PlatformName) -> PlatformConnectionStatus:
         authorization.authorize_url = None
         authorization.pending_state = None
         authorization.pending_state_expires_at = None
-        authorization.access_token_ciphertext = None
-        authorization.refresh_token_ciphertext = None
-        authorization.capabilities = None
+        authorization.access_token_plaintext = None
+        authorization.refresh_token_plaintext = None        authorization.capabilities = None
         health.auth_status = "disconnected"
         health.auth_message = None
         health.overall_status = "warning"
@@ -483,6 +482,40 @@ def get_pending_state(platform: PlatformName) -> str | None:
             session.commit()
             return None
         return authorization.pending_state
+
+
+def get_decrypted_tokens(platform: PlatformName) -> tuple[str | None, str | None, datetime | None]:
+    """Return decrypted (access_token, refresh_token, token_expires_at) for a platform.
+
+    Returns (None, None, None) if the platform is not connected or has no tokens.
+    """
+    with SessionLocal() as session:
+        authorization = session.scalar(
+            select(StoreAuthorizationRecord).where(StoreAuthorizationRecord.platform == platform)
+        )
+        if authorization is None or not authorization.connected:
+            return None, None, None
+        access_token = decrypt_token(authorization.access_token_plaintext)
+        refresh_token = decrypt_token(authorization.refresh_token_plaintext)
+        return access_token, refresh_token, authorization.token_expires_at
+
+
+def update_tokens(
+    platform: PlatformName,
+    *,
+    access_token: str,
+    refresh_token: str | None,
+    token_expires_at: datetime,
+) -> None:
+    """Update stored tokens for a platform (used after token refresh)."""
+    with SessionLocal() as session:
+        _store, authorization = _get_or_create_authorization(session, platform)
+        authorization.access_token_plaintext = encrypt_token(access_token)
+        authorization.refresh_token_plaintext = encrypt_token(refresh_token)
+        authorization.token_expires_at = token_expires_at
+        connection = _build_connection_from_authorization(authorization)
+        _sync_legacy_connection(session, connection, access_token=access_token, refresh_token=refresh_token)
+        session.commit()
 
 
 def list_stores() -> list[StoreView]:

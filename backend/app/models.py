@@ -64,8 +64,8 @@ class StoreAuthorizationRecord(Base):
     authorize_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     pending_state: Mapped[str | None] = mapped_column(String(255), nullable=True)
     pending_state_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    access_token_ciphertext: Mapped[str | None] = mapped_column(Text, nullable=True)
-    refresh_token_ciphertext: Mapped[str | None] = mapped_column(Text, nullable=True)
+    access_token_plaintext: Mapped[str | None] = mapped_column(Text, nullable=True)
+    refresh_token_plaintext: Mapped[str | None] = mapped_column(Text, nullable=True)
     capabilities: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
     updated_at: Mapped[datetime] = mapped_column(

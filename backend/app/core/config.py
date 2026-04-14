@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379/0")
     next_public_api_base: str = Field(default="http://localhost:8000/api/v1")
     platform_auth_state_secret: str = Field(default="")
+    token_encryption_key: str = Field(default="")
 
     # Security settings
     cors_origins: str = Field(default="http://localhost:3000")

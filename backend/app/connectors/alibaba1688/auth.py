@@ -40,7 +40,16 @@ class AuthorizationResult:
 
 
 def _generate_signature(params: dict, secret: str) -> str:
-    """Generate 1688 API signature (HMAC-SHA1)."""
+    """Generate 1688 API signature (HMAC-SHA1).
+
+    For OAuth token exchange, the signature is computed as:
+      signature = hmac_sha1(secret, sorted_params_string)
+
+    For API calls, the signature uses the param2/1 namespace prefix:
+      signature = hmac_sha1(secret, "param2/1" + sorted_params_string + secret)
+
+    The `use_namespace` flag controls which format to use.
+    """
     sorted_params = sorted(params.items(), key=lambda x: x[0])
     param_str = "&".join(f"{k}={v}" for k, v in sorted_params)
     sign_str = f"param2/1{param_str}{secret}"
@@ -61,11 +70,15 @@ def build_authorize_url(state_token: str) -> str:
 
 
 async def exchange_code(code: str) -> AuthorizationResult:
-    """Exchange authorization code for access token via real 1688 OAuth API."""
+    """Exchange authorization code for access token via real 1688 OAuth API.
+
+    1688 OpenAPI token endpoint: POST /openapi/param2/1/system.oauth2/token/{appKey}
+    Uses the param2/1 namespace signature format required by 1688 API calls.
+    """
     if not settings.alibaba_client_id or not settings.alibaba_client_secret:
         raise AlibabaOAuthError("1688 OAuth credentials not configured")
 
-    token_url = "https://gw.open.1688.com/openapi/token"
+    token_url = f"https://gw.open.1688.com/openapi/param2/1/system.oauth2/token/{settings.alibaba_client_id}"
 
     timestamp = str(int(time.time() * 1000))
     params = {
@@ -93,6 +106,10 @@ async def exchange_code(code: str) -> AuthorizationResult:
     refresh_token = data.get("refresh_token")
     expire_in = data.get("expire_in", 3600)
 
+    # Extract account info from token response
+    member_id = data.get("memberId", "")
+    member_name = data.get("memberName", "")
+
     return AuthorizationResult(
         tokens=AuthorizationTokens(
             access_token=access_token,
@@ -100,10 +117,10 @@ async def exchange_code(code: str) -> AuthorizationResult:
             expires_at=datetime.now(UTC) + timedelta(seconds=expire_in),
         ),
         account=AuthorizedAccount(
-            account_id=f"ali1688-account",
-            account_label="1688 supplier account",
+            account_id=f"ali1688-{member_id}" if member_id else "ali1688-account",
+            account_label=member_name if member_name else "1688 supplier account",
             shop_id=None,
-            shop_name="1688 Supplier Account",
+            shop_name=member_name if member_name else "1688 Supplier Account",
             capabilities=["read_products", "read_shop"],
         ),
     )

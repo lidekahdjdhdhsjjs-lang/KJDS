@@ -76,6 +76,7 @@ export type PlatformAuthorizationStartResponse = {
   platform: 'shopee' | '1688';
   status: 'pending';
   authorize_url: string;
+  pending_state: string;
 };
 
 export type DraftItem = {
@@ -223,6 +224,21 @@ export async function startPlatformAuthorization(
     headers: buildActorHeaders(actor),
   });
   return parseApiResponse<PlatformAuthorizationStartResponse>(response, `Failed to start ${platform} authorization`);
+}
+
+export type ConnectionStatus = {
+  platform: 'shopee' | '1688';
+  status: 'disconnected' | 'pending' | 'connected' | 'error' | 'timeout';
+  account_label: string | null;
+  error_message: string | null;
+  pending_state: string | null;
+};
+
+export async function fetchConnectionStatus(
+  platform: 'shopee' | '1688',
+): Promise<ConnectionStatus> {
+  const response = await fetch(`${API_BASE}/platform-connections/${platform}/status`);
+  return parseApiResponse<ConnectionStatus>(response, `Failed to fetch ${platform} status`);
 }
 
 export async function disconnectPlatform(

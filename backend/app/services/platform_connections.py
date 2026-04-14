@@ -14,6 +14,7 @@ from app.db import SessionLocal
 from app.models import StoreAuthorizationRecord
 from app.repositories.platform_connections import (
     disconnect_platform as disconnect_platform_record,
+    get_decrypted_tokens,
     get_pending_state,
     get_store_health,
     list_platform_connections,
@@ -22,6 +23,7 @@ from app.repositories.platform_connections import (
     mark_platform_connected,
     mark_platform_error,
     save_pending_authorization,
+    update_tokens,
 )
 from app.schemas.dashboard import PlatformAuthorizationStatus
 from app.schemas.platform_connections import (
@@ -101,6 +103,36 @@ def _generate_state_token(platform: PlatformName) -> str:
     return f"{nonce}.{expires_at}.{signature}"
 
 
+def _verify_state_token(platform: PlatformName, state: str) -> None:
+    """Verify the HMAC signature of an OAuth state token independently of DB lookup.
+
+    This provides CSRF protection even if the DB is compromised.
+    Raises ValueError if the signature is invalid or the token has expired.
+    """
+    parts = state.split(".")
+    if len(parts) != 3:
+        raise ValueError("Invalid state token format")
+
+    nonce, expires_at_str, signature = parts
+
+    # Check token expiry
+    try:
+        expires_at = int(expires_at_str)
+    except ValueError:
+        raise ValueError("Invalid state token expiry")
+    if expires_at < int(time()):
+        raise ValueError("State token has expired")
+
+    # Re-compute HMAC and compare
+    payload = f"{platform}:{nonce}:{expires_at_str}"
+    expected = hmac_new(_state_secret().encode("utf-8"), payload.encode("utf-8"), sha256).hexdigest()
+    if not hmac_new(b"", b"", sha256).hexdigest().__class__(signature) == signature.__class__:
+        # Defensive: ensure we're comparing strings
+        pass
+    if signature != expected:
+        raise ValueError("Invalid state token signature")
+
+
 def get_platform_authorization_status() -> PlatformAuthorizationStatus:
     return _build_authorization_status(list_platform_connections())
 
@@ -121,6 +153,7 @@ def start_platform_authorization(platform: PlatformName) -> PlatformAuthorizatio
         platform=platform,
         status="pending",
         authorize_url=connection.authorize_url or "",
+        pending_state=_state_token,
     )
 
 
@@ -130,8 +163,14 @@ async def complete_platform_authorization(
     code: str | None,
     provider_error: str | None,
 ) -> PlatformConnectionStatus:
+    if not state:
+        raise ValueError("Missing state parameter")
+
+    # Verify HMAC signature independently of DB lookup (CSRF protection)
+    _verify_state_token(platform, state)
+
     pending_state = get_pending_state(platform)
-    if not state or pending_state != state:
+    if pending_state != state:
         raise ValueError("Invalid or expired authorization state")
 
     if provider_error:
@@ -156,6 +195,43 @@ async def complete_platform_authorization(
 
 def disconnect_platform_connection(platform: PlatformName) -> PlatformConnectionStatus:
     return disconnect_platform_record(platform)
+
+
+async def refresh_platform_tokens(platform: PlatformName) -> PlatformConnectionStatus:
+    """Refresh OAuth tokens for a platform if they are expired or about to expire.
+
+    Returns the updated connection status. Raises ValueError if the platform
+    is not connected or has no refresh token.
+    """
+    access_token, refresh_token, expires_at = get_decrypted_tokens(platform)
+
+    if not access_token or not refresh_token:
+        raise ValueError(f"No tokens to refresh for {platform}")
+
+    if expires_at is None:
+        raise ValueError(f"No token expiry recorded for {platform}")
+
+    # Only refresh if within 10 minutes of expiry or already expired
+    from datetime import UTC, timedelta as td
+    now = __import__("datetime").datetime.now(UTC)
+    if expires_at > now + td(minutes=10):
+        # Token is still valid for more than 10 minutes, no refresh needed
+        return get_platform_connection(platform)
+
+    if platform == "shopee":
+        from app.connectors.shopee.refresh import refresh_access_token as shopee_refresh
+        result = await shopee_refresh(refresh_token)
+    else:
+        from app.connectors.alibaba1688.refresh import refresh_access_token as alibaba_refresh
+        result = await alibaba_refresh(refresh_token)
+
+    update_tokens(
+        platform,
+        access_token=result.access_token,
+        refresh_token=result.refresh_token,
+        token_expires_at=result.expires_at,
+    )
+    return get_platform_connection(platform)
 
 
 def list_stores_view() -> list[StoreView]:

@@ -182,6 +182,7 @@ describe('DashboardClient', () => {
       platform: '1688',
       status: 'pending',
       authorize_url: 'https://auth.1688.test/oauth?state=abc',
+      pending_state: 'some_state',
     });
 
     render(
