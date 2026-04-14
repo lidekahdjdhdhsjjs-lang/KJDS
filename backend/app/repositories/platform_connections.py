@@ -38,25 +38,15 @@ def _deserialize_capabilities(capabilities: str | None) -> list[str]:
 
 
 def _default_connection(platform: PlatformName) -> PlatformConnectionStatus:
-    authorized = settings.shopee_authorized if platform == "shopee" else settings.alibaba_authorized
-    account_label = None
-    shop_name = None
-    capabilities: list[str] = []
-    if authorized:
-        account_label = "Shopee store" if platform == "shopee" else "1688 supplier account"
-        shop_name = account_label
-        capabilities = ["read_products", "read_shop"]
-        if platform == "shopee":
-            capabilities.append("publish_listings")
-
+    """Return default (disconnected) platform connection status."""
     return PlatformConnectionStatus(
         platform=platform,
-        connected=authorized,
-        status="connected" if authorized else "disconnected",
-        account_label=account_label,
-        shop_name=shop_name,
-        last_connected_at=datetime.now(UTC).isoformat() if authorized else None,
-        capabilities=capabilities,
+        connected=False,
+        status="disconnected",
+        account_label=None,
+        shop_name=None,
+        last_connected_at=None,
+        capabilities=[],
     )
 
 
@@ -276,27 +266,11 @@ def _ensure_platform_records(session, platform: PlatformName) -> PlatformConnect
     # Only initialize from defaults if the authorization has never been touched
     # (status is the initial "disconnected" and last_connected_at has never been set)
     if authorization.last_connected_at is None and authorization.status == "disconnected" and not authorization.connected:
-        authorization.connected = default_connection.connected
-        authorization.status = default_connection.status
-        authorization.account_label = default_connection.account_label
-        authorization.account_id = default_connection.account_id
-        authorization.shop_id = default_connection.shop_id
-        authorization.shop_name = default_connection.shop_name
-        authorization.token_expires_at = None
-        authorization.last_connected_at = (
-            datetime.fromisoformat(default_connection.last_connected_at) if default_connection.last_connected_at else None
-        )
-        authorization.last_error = None
-        authorization.authorize_url = None
-        authorization.pending_state = None
-        authorization.pending_state_expires_at = None
-        authorization.access_token_ciphertext = None
-        authorization.refresh_token_ciphertext = None
-        authorization.capabilities = _serialize_capabilities(default_connection.capabilities)
-        health.auth_status = default_connection.status
-        health.auth_message = None
-        health.incident_status = "clear"
-        health.overall_status = "healthy" if default_connection.connected else "warning"
+        # Fresh record - leave it disconnected, user must complete real OAuth
+        authorization.status = "disconnected"
+        authorization.connected = False
+        health.auth_status = "disconnected"
+        health.overall_status = "warning"
         health.last_checked_at = datetime.now(UTC)
 
     connection = _build_connection_from_authorization(authorization)
