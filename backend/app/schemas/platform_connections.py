@@ -33,6 +33,7 @@ class PlatformAuthorizationStartResponse(BaseModel):
     platform: PlatformName
     status: Literal["pending"]
     authorize_url: str
+    pending_state: str
 
 
 class StoreView(BaseModel):
