@@ -28,6 +28,10 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
+  const errorRetryButtonRef = useRef<HTMLButtonElement>(null);
+  const timeoutRetryButtonRef = useRef<HTMLButtonElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const startAuthButtonRef = useRef<HTMLButtonElement>(null);
 
   const checkStatus = useCallback(async () => {
     try {
@@ -40,8 +44,8 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
         setAuthState('error');
         setErrorMessage(status.error_message || 'Authorization failed');
       }
-    } catch {
-      // Ignore polling errors silently
+    } catch (err) {
+      console.error('Polling error:', err);
     }
   }, [platform, onStateChange]);
 
@@ -84,8 +88,8 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
           setAuthState('error');
           setErrorMessage(status.error_message || 'Authorization failed');
         }
-      } catch {
-        // Continue polling on network error
+      } catch (err) {
+        console.error('Polling error:', err);
       }
     }, POLL_INTERVAL);
   }, [platform, onStateChange, stopPolling]);
@@ -98,9 +102,11 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
       window.open(result.authorize_url, '_blank');
       setAuthState('pending');
       startPolling(result.pending_state);
+      cancelButtonRef.current?.focus();
     } catch (err) {
       setAuthState('error');
       setErrorMessage(err instanceof Error ? err.message : 'Failed to start authorization');
+      errorRetryButtonRef.current?.focus();
     }
   }, [platform, startPolling]);
 
@@ -112,13 +118,15 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
       setConnectionStatus(null);
       onStateChange?.(false);
     } catch (err) {
+      setAuthState('connected');
       setErrorMessage(err instanceof Error ? err.message : 'Failed to disconnect');
     }
   }, [platform, onStateChange]);
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = useCallback((focusRef?: React.RefObject<HTMLButtonElement>) => {
     setAuthState('idle');
     setErrorMessage('');
+    focusRef?.current?.focus();
   }, []);
 
   useEffect(() => {
@@ -137,6 +145,7 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
         </div>
         <button
           onClick={handleDisconnect}
+          aria-label="断开连接"
           style={{ padding: '6px 16px', background: '#FEE2E2', color: '#991B1B', border: '1px solid #FCA5A5', borderRadius: '6px', cursor: 'pointer' }}
         >
           断开连接
@@ -156,7 +165,9 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
           {errorMessage || '未知错误'}
         </div>
         <button
-          onClick={handleRetry}
+          ref={errorRetryButtonRef}
+          onClick={() => handleRetry(errorRetryButtonRef)}
+          aria-label="重新授权"
           style={{ padding: '6px 16px', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
         >
           重新授权
@@ -176,7 +187,9 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
           请在弹出的页面完成授权，或网络连接不稳定。
         </div>
         <button
-          onClick={handleRetry}
+          ref={timeoutRetryButtonRef}
+          onClick={() => handleRetry(timeoutRetryButtonRef)}
+          aria-label="重新授权"
           style={{ padding: '6px 16px', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
         >
           重新授权
@@ -195,11 +208,13 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
         <div style={{ color: '#1D4ED8', fontSize: '14px', marginBottom: '8px' }}>
           请在弹出的页面完成 {platformLabel} 账号登录和授权
         </div>
-        <div style={{ color: '#6B7280', fontSize: '12px', marginBottom: '12px' }}>
+        <div style={{ color: '#6B7280', fontSize: '12px', marginBottom: '12px' }} aria-live="polite">
           已等待 {elapsedSeconds} 秒
         </div>
         <button
+          ref={cancelButtonRef}
           onClick={() => { stopPolling(); setAuthState('idle'); }}
+          aria-label="取消授权"
           style={{ padding: '6px 16px', background: '#E5E7EB', color: '#374151', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
         >
           取消
@@ -218,7 +233,9 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
         <li>授权完成后页面将自动更新状态</li>
       </ol>
       <button
+        ref={startAuthButtonRef}
         onClick={handleStartAuth}
+        aria-label="开始授权"
         disabled={authState === 'loading'}
         style={{
           padding: '8px 20px',
