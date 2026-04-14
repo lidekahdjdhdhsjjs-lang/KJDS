@@ -7,36 +7,6 @@ from app.models import CandidateRecord, DraftRecord
 from app.schemas.dashboard import DashboardSummary
 from app.schemas.workflow import CandidateItem, DraftItem
 
-SEED_CANDIDATES = [
-    CandidateItem(
-        id="cand-001",
-        supplier_name="1688-demo-supplier",
-        title_raw="Portable storage rack",
-        risk_level=1,
-        score=0.84,
-        status="shortlisted",
-    ),
-    CandidateItem(
-        id="cand-002",
-        supplier_name="1688-demo-supplier-2",
-        title_raw="Kitchen organizer set",
-        risk_level=2,
-        score=0.78,
-        status="scored",
-    ),
-]
-
-SEED_DRAFTS = [
-    DraftItem(
-        id="draft-001",
-        candidate_id="cand-001",
-        title="Portable Kitchen Storage Rack for Small Spaces",
-        status="ready_for_review",
-        draft_version=1,
-    )
-]
-
-
 WORKFLOW_COUNTERS = {
     "approved_today": 0,
     "published_today": 0,
@@ -70,25 +40,14 @@ def _draft_from_record(record: DraftRecord) -> dict:
 
 
 def reset_workflow_state() -> None:
-    WORKFLOW_COUNTERS["approved_today"] = 0
-    WORKFLOW_COUNTERS["published_today"] = 0
-    WORKFLOW_COUNTERS["failed_jobs"] = 0
-
+    """Clear all workflow data from database."""
     with SessionLocal() as session:
         session.query(DraftRecord).delete()
         session.query(CandidateRecord).delete()
         session.commit()
-
-        for candidate in SEED_CANDIDATES:
-            session.add(CandidateRecord(**candidate.model_dump()))
-
-        for draft in SEED_DRAFTS:
-            payload = draft.model_dump()
-            if payload["published_at"] is not None:
-                payload["published_at"] = datetime.fromisoformat(payload["published_at"])
-            session.add(DraftRecord(**payload))
-
-        session.commit()
+    WORKFLOW_COUNTERS["approved_today"] = 0
+    WORKFLOW_COUNTERS["published_today"] = 0
+    WORKFLOW_COUNTERS["failed_jobs"] = 0
 
 
 
