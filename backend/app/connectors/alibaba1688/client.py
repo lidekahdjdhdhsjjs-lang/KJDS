@@ -1,4 +1,6 @@
 """1688 API client for real API calls."""
+import hashlib
+import hmac
 import httpx
 from app.core.config import settings
 
@@ -39,17 +41,25 @@ class AlibabaClient:
     async def __aexit__(self, *args) -> None:
         await self.close()
 
+    def _generate_signature(self, api_path: str, params: dict, secret: str) -> str:
+        """Generate 1688 API signature (HMAC-SHA1)."""
+        sorted_params = sorted(params.items(), key=lambda x: x[0])
+        param_str = "&".join(f"{k}={v}" for k, v in sorted_params)
+        sign_str = f"param2/1{api_path}{param_str}{secret}"
+        return hmac.new(secret.encode(), sign_str.encode(), hashlib.sha1).hexdigest().upper()
+
     async def get_product_list(self, page_size: int = 20, page: int = 1) -> dict:
         """Search products from 1688."""
         client = await self._get_client()
-        response = await client.post(
-            "/param2/1/com.alibaba.open/alibaba.product.list.get/",
-            data={
-                "access_token": self.access_token,
-                "pageSize": page_size,
-                "page": page,
-            },
-        )
+        api_path = "/param2/1/com.alibaba.open/alibaba.product.list.get/"
+        data_dict = {
+            "access_token": self.access_token,
+            "pageSize": page_size,
+            "page": page,
+        }
+        sign = self._generate_signature(api_path, data_dict, settings.alibaba_client_secret)
+        data_dict["sign"] = sign
+        response = await client.post(api_path, data=data_dict)
         response.raise_for_status()
         data = response.json()
         if data.get("errorCode") or data.get("error"):
@@ -62,13 +72,14 @@ class AlibabaClient:
     async def get_product_detail(self, product_id: str) -> dict:
         """Get product detail."""
         client = await self._get_client()
-        response = await client.post(
-            "/param2/1/com.alibaba.open/alibaba.product.get/",
-            data={
-                "access_token": self.access_token,
-                "productID": product_id,
-            },
-        )
+        api_path = "/param2/1/com.alibaba.open/alibaba.product.get/"
+        data_dict = {
+            "access_token": self.access_token,
+            "productID": product_id,
+        }
+        sign = self._generate_signature(api_path, data_dict, settings.alibaba_client_secret)
+        data_dict["sign"] = sign
+        response = await client.post(api_path, data=data_dict)
         response.raise_for_status()
         data = response.json()
         if data.get("errorCode") or data.get("error"):
