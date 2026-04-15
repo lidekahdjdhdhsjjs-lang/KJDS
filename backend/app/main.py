@@ -1,5 +1,6 @@
-from contextlib import asynccontextmanager
 import logging
+import logging.config
+from contextlib import asynccontextmanager
 import time
 from collections.abc import AsyncIterator
 from typing import Callable
@@ -15,12 +16,62 @@ from app.core.config import settings
 from app.db import init_db
 from app.schemas.common import ApiResponse
 
+LOGGING_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "format": "%(asctime)s | %(levelname)-8s | %(name)s:%(lineno)d | %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+        "access": {
+            "format": "%(asctime)s | %(levelname)-8s | %(client_addr)s - %(request_line)s - %(status_code)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG" if settings.app_debug else "INFO",
+            "formatter": "default",
+            "stream": "ext://sys.stderr",
+        },
+    },
+    "loggers": {
+        "app": {"level": "DEBUG" if settings.app_debug else "INFO", "handlers": ["console"], "propagate": False},
+        "uvicorn": {"level": "INFO", "handlers": ["console"], "propagate": False},
+        "uvicorn.access": {"level": "INFO", "handlers": ["console"], "propagate": False},
+        "sqlalchemy.engine": {"level": "WARNING", "handlers": ["console"], "propagate": False},
+    },
+    "root": {"level": "INFO", "handlers": ["console"]},
+}
+logging.config.dictConfig(LOGGING_CONFIG)
+
 logger = logging.getLogger(__name__)
+
+
+def _validate_production_secrets() -> None:
+    """Fail fast if required production secrets are missing."""
+    if settings.app_env != "production":
+        return
+    missing: list[str] = []
+    if not settings.api_key or settings.api_key == "change-me-in-production":
+        missing.append("api_key")
+    if not settings.token_encryption_key:
+        missing.append("token_encryption_key")
+    if not settings.session_secret_key or settings.session_secret_key == "change-me-in-production":
+        missing.append("session_secret_key")
+    if missing:
+        raise RuntimeError(
+            f"Production secrets not configured: {', '.join(missing)}. "
+            "Set these in environment variables or .env file before starting in production."
+        )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    _validate_production_secrets()
     init_db()
     logger.info(f"Starting {settings.app_name} in {settings.app_env} mode")
     yield

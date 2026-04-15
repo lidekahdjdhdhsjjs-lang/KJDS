@@ -9,6 +9,7 @@ import {
   ACTOR_PRESETS,
   fetchPlatformConnections,
   disconnectPlatform,
+  refreshPlatformTokens,
 } from '@/lib/api';
 import { GuidedAuthModal } from '@/components/GuidedAuthModal';
 import { getUserFriendlyError } from './ErrorBoundary';
@@ -38,12 +39,32 @@ export function SettingsClient({
   const [feedback, setFeedback] = useState<Feedback | undefined>(initialFeedback);
   const [loadError, setLoadError] = useState<string | undefined>(initialLoadError);
   const [loadingPlatform, setLoadingPlatform] = useState<string | null>(null);
+  const [refreshingPlatform, setRefreshingPlatform] = useState<string | null>(null);
   const [actor] = useState<ActingOperator>(ACTOR_PRESETS.operator);
   const [activeModalPlatform, setActiveModalPlatform] = useState<'shopee' | '1688' | null>(null);
 
   const handleConnect = (platform: 'shopee' | '1688') => {
     setFeedback(undefined);
     setActiveModalPlatform(platform);
+  };
+
+  const handleRefresh = async (platform: 'shopee' | '1688') => {
+    setFeedback(undefined);
+    setRefreshingPlatform(platform);
+    try {
+      await refreshPlatformTokens(platform, actor);
+      const updated = await fetchPlatformConnections();
+      setConnections(updated);
+      setFeedback({
+        tone: 'success',
+        text: `${PLATFORM_LABELS[platform]} tokens refreshed successfully.`,
+      });
+    } catch (error: unknown) {
+      const message = getUserFriendlyError(error);
+      setFeedback({ tone: 'error', text: message });
+    } finally {
+      setRefreshingPlatform(null);
+    }
   };
 
   const handleDisconnect = async (platform: 'shopee' | '1688') => {
@@ -193,13 +214,22 @@ export function SettingsClient({
 
                     <div className="ml-4 flex gap-2">
                       {isConnected ? (
-                        <button
-                          onClick={() => handleDisconnect(conn.platform)}
-                          disabled={isLoading}
-                          className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                        >
-                          {isLoading ? 'Disconnecting...' : 'Disconnect'}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleRefresh(conn.platform)}
+                            disabled={refreshingPlatform === conn.platform || isLoading}
+                            className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                          >
+                            {refreshingPlatform === conn.platform ? 'Refreshing...' : 'Refresh Tokens'}
+                          </button>
+                          <button
+                            onClick={() => handleDisconnect(conn.platform)}
+                            disabled={isLoading || refreshingPlatform === conn.platform}
+                            className="rounded-md bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                          >
+                            {isLoading ? 'Disconnecting...' : 'Disconnect'}
+                          </button>
+                        </>
                       ) : (
                         <button
                           onClick={() => handleConnect(conn.platform)}

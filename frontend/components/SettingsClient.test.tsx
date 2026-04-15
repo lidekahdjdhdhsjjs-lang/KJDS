@@ -26,6 +26,15 @@ vi.mock('@/lib/api', async () => {
       pending_state: null,
     }),
     disconnectPlatform: vi.fn().mockResolvedValue(undefined),
+    refreshPlatformTokens: vi.fn().mockResolvedValue({
+      platform: 'shopee',
+      connected: true,
+      status: 'connected',
+      account_label: 'Shopee Store',
+      last_connected_at: '2024-01-01T00:00:00Z',
+      last_error: null,
+      authorize_url: null,
+    }),
     startPlatformAuthorization: vi.fn().mockResolvedValue(undefined),
   };
 });
@@ -217,6 +226,55 @@ describe('SettingsClient', () => {
     await waitFor(() => {
       expect(api.disconnectPlatform).toHaveBeenCalledWith('shopee', expect.anything());
       expect(api.fetchPlatformConnections).toHaveBeenCalled();
+    });
+  });
+
+  it('shows loading state when refreshing tokens', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.refreshPlatformTokens).mockReturnValue(new Promise(() => {}));
+
+    render(<SettingsClient initialConnections={mockConnections} />);
+
+    const refreshBtn = screen.getByRole('button', { name: /Refresh Tokens/i });
+    await user.click(refreshBtn);
+
+    expect(screen.getByText('Refreshing...')).toBeTruthy();
+  });
+
+  it('shows success feedback when token refresh succeeds', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.refreshPlatformTokens).mockResolvedValueOnce({
+      platform: 'shopee',
+      connected: true,
+      status: 'connected',
+      account_label: 'Shopee Store',
+      last_connected_at: '2024-01-01T00:00:00Z',
+      last_error: null,
+      authorize_url: null,
+    });
+    vi.mocked(api.fetchPlatformConnections).mockResolvedValueOnce(mockConnections);
+
+    render(<SettingsClient initialConnections={mockConnections} />);
+
+    const refreshBtn = screen.getByRole('button', { name: /Refresh Tokens/i });
+    await user.click(refreshBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Shopee tokens refreshed successfully.')).toBeTruthy();
+    });
+  });
+
+  it('shows error feedback when token refresh fails', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.refreshPlatformTokens).mockRejectedValueOnce(new Error('Token expired'));
+
+    render(<SettingsClient initialConnections={mockConnections} />);
+
+    const refreshBtn = screen.getByRole('button', { name: /Refresh Tokens/i });
+    await user.click(refreshBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Token expired')).toBeTruthy();
     });
   });
 
