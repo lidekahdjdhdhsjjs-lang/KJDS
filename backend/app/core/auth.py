@@ -1,3 +1,4 @@
+from hmac import compare_digest
 from typing import Literal, cast
 
 from fastapi import Header, HTTPException, Query, status
@@ -21,12 +22,12 @@ def require_roles(*allowed_roles: Role):
         api_key: str | None = Query(default=None, alias="api_key"),
         authorization: str | None = Header(default=None),
     ) -> CurrentActor:
-        if api_key and settings.api_key and api_key == settings.api_key:
+        if api_key and settings.api_key and compare_digest(api_key, settings.api_key):
             return CurrentActor(operator_id="api-key-user", role="admin")
 
         if authorization and authorization.startswith("Bearer "):
             token = authorization[7:]
-            if settings.api_key and token == settings.api_key:
+            if settings.api_key and compare_digest(token, settings.api_key):
                 return CurrentActor(operator_id="api-key-user", role="admin")
 
         if settings.allow_header_auth:

@@ -8,6 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from app.core.auth import CurrentActor, require_roles
 from app.db import get_db_session
 from app.models_browser import BrowserProfileRecord, BrowserSessionRecord, ProxyPoolRecord
 from app.repositories.browser_profiles import (
@@ -121,6 +122,7 @@ class ProxyResponse(BaseModel):
 async def create_browser_profile(
     request: BrowserProfileCreate,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """创建浏览器配置文件"""
     repo = BrowserProfileRepository(db)
@@ -181,6 +183,7 @@ async def list_browser_profiles(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """列出浏览器配置文件"""
     repo = BrowserProfileRepository(db)
@@ -225,6 +228,7 @@ async def list_browser_profiles(
 async def get_browser_profile(
     profile_id: str,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """获取浏览器配置文件详情"""
     repo = BrowserProfileRepository(db)
@@ -260,6 +264,7 @@ async def get_browser_profile(
 async def delete_browser_profile(
     profile_id: str,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """删除浏览器配置文件"""
     repo = BrowserProfileRepository(db)
@@ -279,6 +284,7 @@ async def delete_browser_profile(
 async def lock_browser_profile(
     profile_id: str,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """锁定浏览器配置文件"""
     repo = BrowserProfileRepository(db)
@@ -294,6 +300,7 @@ async def lock_browser_profile(
 async def unlock_browser_profile(
     profile_id: str,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """解锁浏览器配置文件"""
     repo = BrowserProfileRepository(db)
@@ -314,6 +321,7 @@ async def create_browser_session(
     request: BrowserSessionCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """创建浏览器会话"""
     profile_repo = BrowserProfileRepository(db)
@@ -359,6 +367,7 @@ async def close_browser_session(
     session_id: str,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """关闭浏览器会话"""
     result = await browser_automation_service.close_session(session_id)
@@ -376,7 +385,9 @@ async def close_browser_session(
 
 
 @router.get("/sessions", response_model=list[str])
-async def list_active_sessions():
+async def list_active_sessions(
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """列出所有活跃会话"""
     return browser_automation_service.get_active_sessions()
 
@@ -386,6 +397,7 @@ async def scrape_url(
     session_id: str,
     request: ScrapeRequest,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """使用会话抓取URL"""
     session = browser_automation_service._sessions.get(session_id)
@@ -407,6 +419,7 @@ async def scrape_shopee_product(
     session_id: str,
     request: ScrapeRequest,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """抓取Shopee商品详情"""
     session = browser_automation_service._sessions.get(session_id)
@@ -426,6 +439,7 @@ async def scrape_1688_product(
     session_id: str,
     request: ScrapeRequest,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """抓取1688商品详情"""
     session = browser_automation_service._sessions.get(session_id)
@@ -448,6 +462,7 @@ async def scrape_1688_product(
 async def create_proxy(
     request: ProxyCreate,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """创建代理"""
     repo = ProxyPoolRepository(db)
@@ -493,6 +508,7 @@ async def list_proxies(
     country: str | None = None,
     is_active: bool | None = None,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """列出代理"""
     repo = ProxyPoolRepository(db)
@@ -523,6 +539,7 @@ async def list_proxies(
 async def delete_proxy(
     proxy_id: str,
     db: Session = Depends(get_db_session),
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
 ):
     """删除代理"""
     repo = ProxyPoolRepository(db)
@@ -539,7 +556,9 @@ async def delete_proxy(
 # ============================================================================
 
 @router.get("/regions")
-async def list_regions():
+async def list_regions(
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """列出支持的地区配置"""
     return REGION_CONFIGS
 

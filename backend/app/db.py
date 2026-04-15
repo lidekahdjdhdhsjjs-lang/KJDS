@@ -23,7 +23,14 @@ def get_engine() -> Engine:
             connect_args={"check_same_thread": False},
             poolclass=StaticPool,
         )
-    return create_engine(database_uri, future=True)
+    return create_engine(
+        database_uri,
+        future=True,
+        pool_size=10,
+        max_overflow=20,
+        pool_recycle=1800,
+        pool_pre_ping=True,
+    )
 
 
 @lru_cache(maxsize=1)
@@ -39,6 +46,10 @@ def get_db_session() -> Generator[Session, None, None]:
     session = SessionLocal()
     try:
         yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
     finally:
         session.close()
 

@@ -2,8 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.core.auth import CurrentActor, require_roles
 from app.schemas.common import ApiResponse
 from app.schemas.sprint2 import (
     PublishTaskCreate,
@@ -17,7 +18,10 @@ router = APIRouter(prefix="/publish-tasks", tags=["publish-tasks"])
 
 
 @router.post("", response_model=ApiResponse[PublishTaskView])
-async def create_task(body: PublishTaskCreate):
+async def create_task(
+    body: PublishTaskCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new publish task."""
     request_data: Any = body.request_payload
     task = publish_service.create_task(
@@ -35,6 +39,7 @@ async def list_tasks(
     status: str | None = None,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List publish tasks with optional filters."""
     tasks = publish_service.list_tasks(
@@ -50,7 +55,10 @@ async def list_tasks(
 
 
 @router.get("/{task_id}", response_model=ApiResponse[PublishTaskView])
-async def get_task(task_id: str):
+async def get_task(
+    task_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get a task by ID."""
     task = publish_service.get_task(task_id)
     if task is None:
@@ -59,7 +67,10 @@ async def get_task(task_id: str):
 
 
 @router.post("/{task_id}/start", response_model=ApiResponse[PublishTaskView])
-async def start_task(task_id: str):
+async def start_task(
+    task_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Start a task."""
     task = publish_service.start_task(task_id)
     if task is None:
@@ -68,7 +79,12 @@ async def start_task(task_id: str):
 
 
 @router.post("/{task_id}/complete", response_model=ApiResponse[PublishTaskView])
-async def complete_task(task_id: str, platform_item_ref: str | None = None, response_data: Any = None):
+async def complete_task(
+    task_id: str,
+    platform_item_ref: str | None = None,
+    response_data: Any = None,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark task as completed."""
     try:
         task = publish_service.complete_task(
@@ -82,7 +98,12 @@ async def complete_task(task_id: str, platform_item_ref: str | None = None, resp
 
 
 @router.post("/{task_id}/fail", response_model=ApiResponse[PublishTaskView])
-async def fail_task(task_id: str, error: str, retryable: bool = True):
+async def fail_task(
+    task_id: str,
+    error: str,
+    retryable: bool = True,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark task as failed."""
     if retryable:
         task = publish_service.fail_task_retryable(task_id, error)
@@ -94,7 +115,10 @@ async def fail_task(task_id: str, error: str, retryable: bool = True):
 
 
 @router.post("/{task_id}/retry", response_model=ApiResponse[PublishTaskView])
-async def retry_task(task_id: str):
+async def retry_task(
+    task_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Retry a failed task."""
     try:
         task = publish_service.retry_task(task_id)
@@ -106,7 +130,10 @@ async def retry_task(task_id: str):
 
 
 @router.get("/{task_id}/results", response_model=ApiResponse[list[PublishResultView]])
-async def get_results(task_id: str):
+async def get_results(
+    task_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get results for a task."""
     results = publish_service.get_results_for_task(task_id)
     return ApiResponse(

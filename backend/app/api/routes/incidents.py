@@ -2,8 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.core.auth import CurrentActor, require_roles
 from app.schemas.common import ApiResponse
 from app.services import incidents as incident_service
 
@@ -17,6 +18,7 @@ async def list_incidents(
     status: str | None = None,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List incidents with optional filters."""
     incidents = incident_service.list_incidents(
@@ -30,7 +32,10 @@ async def list_incidents(
 
 
 @router.get("/{incident_id}", response_model=ApiResponse[dict[str, Any]])
-async def get_incident(incident_id: str):
+async def get_incident(
+    incident_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get an incident by ID."""
     incident = incident_service.get_incident(incident_id)
     if incident is None:
@@ -39,7 +44,10 @@ async def get_incident(incident_id: str):
 
 
 @router.post("/{incident_id}/acknowledge", response_model=ApiResponse[dict[str, Any]])
-async def acknowledge_incident(incident_id: str):
+async def acknowledge_incident(
+    incident_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Acknowledge an incident."""
     incident = incident_service.acknowledge_incident(incident_id)
     if incident is None:
@@ -48,7 +56,10 @@ async def acknowledge_incident(incident_id: str):
 
 
 @router.post("/{incident_id}/resolve", response_model=ApiResponse[dict[str, Any]])
-async def resolve_incident(incident_id: str):
+async def resolve_incident(
+    incident_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Resolve an incident."""
     incident = incident_service.resolve_incident(incident_id)
     if incident is None:

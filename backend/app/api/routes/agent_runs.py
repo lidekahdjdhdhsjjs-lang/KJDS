@@ -2,8 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.core.auth import CurrentActor, require_roles
 from app.schemas.common import ApiResponse
 from app.schemas.sprint2 import (
     AgentRunComplete,
@@ -17,7 +18,10 @@ router = APIRouter(prefix="/agent-runs", tags=["agent-runs"])
 
 
 @router.post("", response_model=ApiResponse[AgentRunView])
-async def create_run(body: AgentRunCreate):
+async def create_run(
+    body: AgentRunCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new agent run."""
     run = agent_service.create_run(
         agent_name=body.agent_name,
@@ -37,6 +41,7 @@ async def list_runs(
     status: str | None = None,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List agent runs with optional filters."""
     runs = agent_service.list_runs(
@@ -54,7 +59,10 @@ async def list_runs(
 
 
 @router.get("/{run_id}", response_model=ApiResponse[AgentRunView])
-async def get_run(run_id: str):
+async def get_run(
+    run_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get a run by ID."""
     run = agent_service.get_run(run_id)
     if run is None:
@@ -63,7 +71,11 @@ async def get_run(run_id: str):
 
 
 @router.post("/{run_id}/complete", response_model=ApiResponse[AgentRunView])
-async def complete_run(run_id: str, body: AgentRunComplete):
+async def complete_run(
+    run_id: str,
+    body: AgentRunComplete,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark a run as completed."""
     evidence_data: Any = body.evidence_payload
     cost_data: Any = body.cost_payload
@@ -79,7 +91,11 @@ async def complete_run(run_id: str, body: AgentRunComplete):
 
 
 @router.post("/{run_id}/fail", response_model=ApiResponse[AgentRunView])
-async def fail_run(run_id: str, output_summary: str | None = None):
+async def fail_run(
+    run_id: str,
+    output_summary: str | None = None,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark a run as failed."""
     run = agent_service.fail_run(run_id, output_summary=output_summary)
     if run is None:
@@ -88,7 +104,11 @@ async def fail_run(run_id: str, output_summary: str | None = None):
 
 
 @router.get("/entity/{entity_type}/{entity_id}", response_model=ApiResponse[list[AgentRunView]])
-async def get_runs_for_entity(entity_type: str, entity_id: str):
+async def get_runs_for_entity(
+    entity_type: str,
+    entity_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get all runs for an entity."""
     runs = agent_service.get_runs_for_entity(entity_type, entity_id)
     return ApiResponse(

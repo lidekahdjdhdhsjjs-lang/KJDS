@@ -2,7 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.core.auth import CurrentActor, require_roles
 from pydantic import BaseModel
 
 from app.schemas.common import ApiResponse
@@ -20,7 +22,10 @@ class TrainingPackageCreate(BaseModel):
 
 
 @router.post("", response_model=ApiResponse[dict[str, Any]])
-async def create_package(body: TrainingPackageCreate):
+async def create_package(
+    body: TrainingPackageCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new training archive package."""
     pkg = repo.create_package(
         store_id=body.store_id,
@@ -39,6 +44,7 @@ async def list_packages(
     package_type: str | None = None,
     limit: int = 100,
     offset: int = 0,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List training archive packages with optional filters."""
     packages = repo.list_packages(
@@ -52,7 +58,10 @@ async def list_packages(
 
 
 @router.get("/{package_id}", response_model=ApiResponse[dict[str, Any]])
-async def get_package(package_id: str):
+async def get_package(
+    package_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get a package by ID."""
     pkg = repo.get_package(package_id)
     if pkg is None:

@@ -2,10 +2,11 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.schemas.common import ApiResponse
+from app.core.auth import CurrentActor, require_roles
 from app.repositories import demand_signal_snapshots as repo
 
 router = APIRouter(prefix="/demand-signals", tags=["demand-signals"])
@@ -20,7 +21,10 @@ class DemandSignalCreate(BaseModel):
 
 
 @router.post("", response_model=ApiResponse[dict[str, Any]])
-async def create_snapshot(body: DemandSignalCreate):
+async def create_snapshot(
+    body: DemandSignalCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new demand signal snapshot."""
     snapshot = repo.create_snapshot(
         opportunity_item_id=body.opportunity_item_id,
@@ -38,6 +42,7 @@ async def list_item_snapshots(
     signal_type: str | None = None,
     limit: int = 100,
     offset: int = 0,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List demand signal snapshots for an opportunity item."""
     snapshots = repo.list_snapshots(
@@ -50,7 +55,10 @@ async def list_item_snapshots(
 
 
 @router.get("/{snapshot_id}", response_model=ApiResponse[dict[str, Any]])
-async def get_snapshot(snapshot_id: str):
+async def get_snapshot(
+    snapshot_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get a snapshot by ID."""
     snapshot = repo.get_snapshot(snapshot_id)
     if snapshot is None:

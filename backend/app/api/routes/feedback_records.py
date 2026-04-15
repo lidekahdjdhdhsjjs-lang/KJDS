@@ -3,10 +3,11 @@
 import json
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.schemas.common import ApiResponse
+from app.core.auth import CurrentActor, require_roles
 from app.repositories import feedback_records as repo
 
 router = APIRouter(prefix="/feedback-records", tags=["feedback-records"])
@@ -22,7 +23,10 @@ class FeedbackCreate(BaseModel):
 
 
 @router.post("", response_model=ApiResponse[dict[str, Any]])
-async def create_feedback(body: FeedbackCreate):
+async def create_feedback(
+    body: FeedbackCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new feedback record."""
     try:
         json.loads(body.before_payload)
@@ -47,6 +51,7 @@ async def list_feedback(
     review_status: str | None = None,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List feedback records with optional filters."""
     records = repo.list_feedback(
@@ -60,7 +65,10 @@ async def list_feedback(
 
 
 @router.get("/{feedback_id}", response_model=ApiResponse[dict[str, Any]])
-async def get_feedback(feedback_id: str):
+async def get_feedback(
+    feedback_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get a feedback record by ID."""
     feedback = repo.get_feedback(feedback_id)
     if feedback is None:
@@ -69,7 +77,10 @@ async def get_feedback(feedback_id: str):
 
 
 @router.post("/{feedback_id}/approve", response_model=ApiResponse[dict[str, Any]])
-async def approve_feedback(feedback_id: str):
+async def approve_feedback(
+    feedback_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Approve a feedback record."""
     result = repo.approve_feedback(feedback_id)
     if result is None:
@@ -78,7 +89,10 @@ async def approve_feedback(feedback_id: str):
 
 
 @router.post("/{feedback_id}/reject", response_model=ApiResponse[dict[str, Any]])
-async def reject_feedback(feedback_id: str):
+async def reject_feedback(
+    feedback_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Reject a feedback record."""
     result = repo.reject_feedback(feedback_id)
     if result is None:

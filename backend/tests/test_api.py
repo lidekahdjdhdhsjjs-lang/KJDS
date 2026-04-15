@@ -167,7 +167,7 @@ def test_candidate_intake_adds_items() -> None:
         headers=OPERATOR_HEADERS,
     )
     assert intake_response.status_code == 200
-    candidates_response = client.get("/api/v1/candidates")
+    candidates_response = client.get("/api/v1/candidates", headers=OPERATOR_HEADERS)
     body = candidates_response.json()
     assert len(body["data"]["items"]) == 4
 

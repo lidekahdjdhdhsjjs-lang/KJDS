@@ -29,7 +29,9 @@ def _raise_workflow_error(error: Exception) -> None:
 
 
 @router.get("/candidates")
-async def list_candidates() -> ApiResponse[dict[str, object]]:
+async def list_candidates(
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+) -> ApiResponse[dict[str, object]]:
     candidates = list_candidates_action()
     return ApiResponse(success=True, data={"items": candidates}, meta={"count": len(candidates)})
 

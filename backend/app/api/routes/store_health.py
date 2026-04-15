@@ -2,7 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+
+from app.core.auth import CurrentActor, require_roles
 
 from app.schemas.common import ApiResponse
 from app.services import store_health as health_service
@@ -14,6 +16,7 @@ router = APIRouter(prefix="/store-health", tags=["store-health"])
 async def list_store_health(
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List all store health statuses."""
     health_statuses = health_service.list_store_health()
@@ -21,7 +24,10 @@ async def list_store_health(
 
 
 @router.get("/{store_id}", response_model=ApiResponse[dict[str, Any]])
-async def get_store_health(store_id: str):
+async def get_store_health(
+    store_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get health status for a specific store."""
     health = health_service.get_store_health(store_id)
     if health is None:

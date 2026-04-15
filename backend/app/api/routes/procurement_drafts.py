@@ -2,8 +2,9 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.core.auth import CurrentActor, require_roles
 from app.schemas.common import ApiResponse
 from app.schemas.sprint2 import (
     ProcurementDraftCreate,
@@ -16,7 +17,10 @@ router = APIRouter(prefix="/procurement-drafts", tags=["procurement-drafts"])
 
 
 @router.post("", response_model=ApiResponse[ProcurementDraftView])
-async def create_draft(body: ProcurementDraftCreate):
+async def create_draft(
+    body: ProcurementDraftCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new procurement draft."""
     sku_data: Any = body.sku_payload
     draft = procurement_service.create_draft(
@@ -35,6 +39,7 @@ async def list_drafts(
     status: str | None = None,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List procurement drafts with optional filters."""
     drafts = procurement_service.list_drafts(
@@ -50,7 +55,10 @@ async def list_drafts(
 
 
 @router.get("/{draft_id}", response_model=ApiResponse[ProcurementDraftView])
-async def get_draft(draft_id: str):
+async def get_draft(
+    draft_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get a draft by ID."""
     draft = procurement_service.get_draft(draft_id)
     if draft is None:
@@ -59,7 +67,10 @@ async def get_draft(draft_id: str):
 
 
 @router.post("/{draft_id}/submit", response_model=ApiResponse[ProcurementDraftView])
-async def submit_for_confirmation(draft_id: str):
+async def submit_for_confirmation(
+    draft_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Submit draft for confirmation."""
     draft = procurement_service.submit_for_confirmation(draft_id)
     if draft is None:
@@ -68,7 +79,10 @@ async def submit_for_confirmation(draft_id: str):
 
 
 @router.post("/{draft_id}/confirm", response_model=ApiResponse[ProcurementDraftView])
-async def confirm_draft(draft_id: str):
+async def confirm_draft(
+    draft_id: str,
+    _actor: CurrentActor = Depends(require_roles("reviewer", "admin")),
+):
     """Confirm a draft."""
     draft = procurement_service.confirm_draft(draft_id)
     if draft is None:
@@ -77,7 +91,11 @@ async def confirm_draft(draft_id: str):
 
 
 @router.post("/{draft_id}/invalidate", response_model=ApiResponse[ProcurementDraftView])
-async def invalidate_draft(draft_id: str, reason: str):
+async def invalidate_draft(
+    draft_id: str,
+    reason: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Invalidate a draft."""
     draft = procurement_service.invalidate_draft(draft_id, reason)
     if draft is None:
@@ -86,7 +104,10 @@ async def invalidate_draft(draft_id: str, reason: str):
 
 
 @router.post("/{draft_id}/cancel", response_model=ApiResponse[ProcurementDraftView])
-async def cancel_draft(draft_id: str):
+async def cancel_draft(
+    draft_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Cancel a draft."""
     draft = procurement_service.cancel_draft(draft_id)
     if draft is None:

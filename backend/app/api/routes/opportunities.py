@@ -3,8 +3,9 @@
 import json
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.core.auth import CurrentActor, require_roles
 from app.schemas.common import ApiResponse
 from app.schemas.sprint2 import (
     ItemCreate,
@@ -44,7 +45,10 @@ router = APIRouter(prefix="/opportunities", tags=["opportunities"])
 
 
 @router.post("", response_model=ApiResponse[ItemView])
-async def create_item(body: ItemCreate):
+async def create_item(
+    body: ItemCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a new opportunity item."""
     item = item_service.create_item(
         batch_id=body.batch_id,
@@ -62,6 +66,7 @@ async def list_items(
     status: str | None = None,
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
 ):
     """List items with optional filters."""
     items = item_service.list_items(
@@ -78,7 +83,10 @@ async def list_items(
 
 
 @router.get("/{item_id}", response_model=ApiResponse[ItemView])
-async def get_item(item_id: str):
+async def get_item(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get an item by ID."""
     item = item_service.get_item(item_id)
     if item is None:
@@ -87,7 +95,10 @@ async def get_item(item_id: str):
 
 
 @router.get("/{item_id}/detail", response_model=ApiResponse[ItemDetail])
-async def get_item_detail(item_id: str):
+async def get_item_detail(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """Get item with all related entities."""
     detail = item_service.get_item_detail(item_id)
     if detail is None:
@@ -101,7 +112,11 @@ async def get_item_detail(item_id: str):
 
 
 @router.post("/{item_id}/supply-candidates", response_model=ApiResponse[SupplyCandidateView])
-async def add_supply_candidate(item_id: str, body: SupplyCandidateCreate):
+async def add_supply_candidate(
+    item_id: str,
+    body: SupplyCandidateCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Add a supply candidate to an item."""
     candidate = supply_service.create_candidate(
         opportunity_item_id=item_id,
@@ -116,7 +131,11 @@ async def add_supply_candidate(item_id: str, body: SupplyCandidateCreate):
 
 
 @router.get("/{item_id}/supply-candidates", response_model=ApiResponse[list[SupplyCandidateView]])
-async def list_supply_candidates(item_id: str, status: str | None = None):
+async def list_supply_candidates(
+    item_id: str,
+    status: str | None = None,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """List supply candidates for an item."""
     candidates = supply_service.list_candidates(item_id, status=status)
     return ApiResponse(
@@ -126,7 +145,10 @@ async def list_supply_candidates(item_id: str, status: str | None = None):
 
 
 @router.post("/{item_id}/select-best-candidate", response_model=ApiResponse[SupplyCandidateView | None])
-async def select_best_candidate(item_id: str):
+async def select_best_candidate(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Select and set the best supply candidate."""
     best = supply_service.select_best_candidate(item_id)
     if best is None:
@@ -140,7 +162,11 @@ async def select_best_candidate(item_id: str):
 
 
 @router.post("/{item_id}/mapping", response_model=ApiResponse[CategoryMappingView])
-async def create_mapping(item_id: str, body: CategoryMappingCreate):
+async def create_mapping(
+    item_id: str,
+    body: CategoryMappingCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a category mapping for an item."""
     try:
         attributes_data: Any = json.loads(body.attributes_payload) if isinstance(body.attributes_payload, str) else body.attributes_payload
@@ -160,7 +186,10 @@ async def create_mapping(item_id: str, body: CategoryMappingCreate):
 
 
 @router.get("/{item_id}/mappings", response_model=ApiResponse[list[CategoryMappingView]])
-async def list_mappings(item_id: str):
+async def list_mappings(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """List category mappings for an item."""
     mappings = mapping_service.list_mappings(item_id)
     return ApiResponse(
@@ -175,7 +204,11 @@ async def list_mappings(item_id: str):
 
 
 @router.post("/{item_id}/content", response_model=ApiResponse[ContentVariantView])
-async def create_content(item_id: str, body: ContentVariantCreate):
+async def create_content(
+    item_id: str,
+    body: ContentVariantCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a content variant for an item."""
     try:
         bullet_points_data: Any = json.loads(body.bullet_points) if body.bullet_points else None
@@ -194,7 +227,10 @@ async def create_content(item_id: str, body: ContentVariantCreate):
 
 
 @router.get("/{item_id}/content-variants", response_model=ApiResponse[list[ContentVariantView]])
-async def list_content_variants(item_id: str):
+async def list_content_variants(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """List content variants for an item."""
     variants = content_service.list_variants(item_id)
     return ApiResponse(
@@ -209,7 +245,11 @@ async def list_content_variants(item_id: str):
 
 
 @router.post("/{item_id}/pricing", response_model=ApiResponse[PricingDecisionView])
-async def create_pricing(item_id: str, body: PricingDecisionCreate):
+async def create_pricing(
+    item_id: str,
+    body: PricingDecisionCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Create a pricing decision for an item."""
     try:
         cost_data: Any = json.loads(body.cost_payload)
@@ -232,7 +272,10 @@ async def create_pricing(item_id: str, body: PricingDecisionCreate):
 
 
 @router.get("/{item_id}/pricing-decisions", response_model=ApiResponse[list[PricingDecisionView]])
-async def list_pricing_decisions(item_id: str):
+async def list_pricing_decisions(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """List pricing decisions for an item."""
     decisions = pricing_service.list_decisions(item_id)
     return ApiResponse(
@@ -247,7 +290,11 @@ async def list_pricing_decisions(item_id: str):
 
 
 @router.post("/{item_id}/preflight", response_model=ApiResponse[PreflightCheckView])
-async def run_preflight(item_id: str, body: PreflightCheckCreate):
+async def run_preflight(
+    item_id: str,
+    body: PreflightCheckCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Run a preflight check for an item."""
     details_data: Any = body.detail_payload
     check = preflight_service.create_check(
@@ -262,7 +309,10 @@ async def run_preflight(item_id: str, body: PreflightCheckCreate):
 
 
 @router.get("/{item_id}/preflight-checks", response_model=ApiResponse[list[PreflightCheckView]])
-async def list_preflight_checks(item_id: str):
+async def list_preflight_checks(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "reviewer", "admin")),
+):
     """List preflight checks for an item."""
     checks = preflight_service.list_checks(item_id)
     return ApiResponse(
@@ -277,7 +327,10 @@ async def list_preflight_checks(item_id: str):
 
 
 @router.post("/{item_id}/advance/shortlisted", response_model=ApiResponse[ItemView])
-async def advance_to_shortlisted(item_id: str):
+async def advance_to_shortlisted(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Advance item to shortlisted status."""
     try:
         item = item_service.advance_to_shortlisted(item_id)
@@ -287,7 +340,10 @@ async def advance_to_shortlisted(item_id: str):
 
 
 @router.post("/{item_id}/advance/preflight-passed", response_model=ApiResponse[ItemView])
-async def advance_to_preflight_passed(item_id: str):
+async def advance_to_preflight_passed(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Advance item to preflight_passed status."""
     try:
         item = item_service.advance_to_preflight_passed(item_id)
@@ -297,7 +353,10 @@ async def advance_to_preflight_passed(item_id: str):
 
 
 @router.post("/{item_id}/publish", response_model=ApiResponse[ItemView])
-async def publish_item(item_id: str):
+async def publish_item(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark item as publishing."""
     try:
         item = item_service.advance_to_publishing(item_id)
@@ -312,7 +371,11 @@ async def publish_item(item_id: str):
 
 
 @router.post("/{item_id}/advance/{status}", response_model=ApiResponse[ItemView])
-async def advance_item_to_status(item_id: str, status: str):
+async def advance_item_to_status(
+    item_id: str,
+    status: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Advance item to a specific status with validation."""
     try:
         item = item_service.update_item_status(item_id, status)
@@ -322,7 +385,10 @@ async def advance_item_to_status(item_id: str, status: str):
 
 
 @router.post("/{item_id}/reject", response_model=ApiResponse[ItemView])
-async def reject_item(item_id: str):
+async def reject_item(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark item as rejected."""
     try:
         item = item_service.mark_as_rejected(item_id)
@@ -332,7 +398,10 @@ async def reject_item(item_id: str):
 
 
 @router.post("/{item_id}/block", response_model=ApiResponse[ItemView])
-async def block_item(item_id: str):
+async def block_item(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark item as blocked."""
     try:
         item = item_service.mark_as_blocked(item_id)
@@ -342,7 +411,10 @@ async def block_item(item_id: str):
 
 
 @router.post("/{item_id}/manual-required", response_model=ApiResponse[ItemView])
-async def mark_manual_required(item_id: str):
+async def mark_manual_required(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Mark item as requiring manual intervention."""
     try:
         item = item_service.mark_as_manual_required(item_id)
@@ -352,7 +424,10 @@ async def mark_manual_required(item_id: str):
 
 
 @router.post("/{item_id}/archive", response_model=ApiResponse[ItemView])
-async def archive_item(item_id: str):
+async def archive_item(
+    item_id: str,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Archive an item."""
     try:
         item = item_service.mark_as_archived(item_id)
@@ -367,7 +442,10 @@ async def archive_item(item_id: str):
 
 
 @router.post("/bulk/status", response_model=ApiResponse[BulkOperationResult])
-async def bulk_update_status(body: BulkStatusUpdate):
+async def bulk_update_status(
+    body: BulkStatusUpdate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Bulk update status for multiple items."""
     try:
         items = item_service.bulk_advance_status(body.item_ids, body.status)
@@ -393,7 +471,10 @@ async def bulk_update_status(body: BulkStatusUpdate):
 
 
 @router.post("/bulk/risk", response_model=ApiResponse[BulkOperationResult])
-async def bulk_update_risk(body: BulkRiskUpdate):
+async def bulk_update_risk(
+    body: BulkRiskUpdate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Bulk update risk level for multiple items."""
     items = item_service.bulk_set_risk(body.item_ids, body.risk_level)
     return ApiResponse(
@@ -407,7 +488,10 @@ async def bulk_update_risk(body: BulkRiskUpdate):
 
 
 @router.post("/bulk/create", response_model=ApiResponse[BulkOperationResult])
-async def bulk_create_items(body: BulkItemCreate):
+async def bulk_create_items(
+    body: BulkItemCreate,
+    _actor: CurrentActor = Depends(require_roles("operator", "admin")),
+):
     """Bulk create multiple items in a batch."""
     items = item_service.bulk_create_items(
         batch_id=body.batch_id,
