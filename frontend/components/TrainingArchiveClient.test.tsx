@@ -2,18 +2,17 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { JSDOM } from 'jsdom';
 
-import { ProcurementDraftsClient } from './ProcurementDraftsClient';
+import { TrainingArchiveClient } from './TrainingArchiveClient';
 
-const mockDrafts = [
+const mockPackages = [
   {
-    id: 'draft-001',
-    opportunity_item_id: 'item-001',
-    supplier_ref: '1688-supplier-123',
-    qty: 100,
-    purchase_price: 45.5,
-    status: 'awaiting_confirmation',
+    id: 'pkg-001',
+    store_id: 'store-001',
+    batch_id: 'batch-001',
+    package_type: 'batch',
+    storage_uri: 's3://training-archives/batch-001.tar.gz',
+    manifest_payload: '{"products": 100, "images": 500}',
     created_at: '2024-01-01T00:00:00Z',
-    updated_at: '2024-01-01T00:00:00Z',
   },
 ];
 
@@ -35,7 +34,7 @@ beforeEach(() => {
   mockFetch.mockReset();
   mockFetch.mockResolvedValue({
     ok: true,
-    json: () => Promise.resolve({ success: true, data: { items: mockDrafts, total: 1 } }),
+    json: () => Promise.resolve({ success: true, data: { items: mockPackages, total: 1 } }),
   });
 });
 
@@ -44,34 +43,34 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('ProcurementDraftsClient', () => {
+describe('TrainingArchiveClient', () => {
   it('renders page heading and description', async () => {
-    const { container } = render(<ProcurementDraftsClient />);
+    const { container } = render(<TrainingArchiveClient />);
     await waitFor(() => {
-      expect(container.textContent).toContain('Procurement Drafts');
+      expect(container.textContent).toContain('Training Archive');
     });
-    expect(container.textContent).toContain('Manage procurement orders');
+    expect(container.textContent).toContain('ML training data packages');
   });
 
   it('renders main container element', async () => {
-    const { container } = render(<ProcurementDraftsClient />);
+    const { container } = render(<TrainingArchiveClient />);
     await waitFor(() => {
       expect(container.querySelector('main')).toBeTruthy();
     });
   });
 
-  it('renders status filter dropdown', async () => {
-    const { container } = render(<ProcurementDraftsClient />);
+  it('renders type filter dropdown', async () => {
+    const { container } = render(<TrainingArchiveClient />);
     await waitFor(() => {
       expect(container.querySelector('select')).toBeTruthy();
     });
   });
 
-  it('fetches draft data on mount', async () => {
-    render(<ProcurementDraftsClient />);
+  it('fetches training packages on mount', async () => {
+    render(<TrainingArchiveClient />);
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/procurement-drafts'),
+        expect.stringContaining('/training-packages'),
         expect.any(Object),
       );
     });

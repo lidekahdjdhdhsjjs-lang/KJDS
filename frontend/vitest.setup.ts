@@ -31,4 +31,5 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({
     refresh: vi.fn(),
   }),
+  usePathname: () => '/dashboard',
 }));
