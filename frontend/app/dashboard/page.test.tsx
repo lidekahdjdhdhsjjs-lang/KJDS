@@ -93,7 +93,7 @@ describe('DashboardPage', () => {
       guidance: 'Connect 1688 through its real authorization flow before running live actions.',
     });
 
-    const page = await DashboardPage();
+    const page = await DashboardPage({});
     render(page);
 
     expect(screen.getByText('Connect 1688 through its real authorization flow before running live actions.')).toBeTruthy();
@@ -108,7 +108,7 @@ describe('DashboardPage', () => {
       new Error('Development-only header auth is disabled. Connect Shopee and 1688 through their real authorization flows before using the dashboard.'),
     );
 
-    const page = await DashboardPage();
+    const page = await DashboardPage({});
     render(page);
 
     expect(
@@ -154,7 +154,7 @@ describe('DashboardPage', () => {
     fetchDraftsMock.mockResolvedValue({ items: [{ id: 'draft-001' }] });
     fetchDashboardAuthorizationMock.mockRejectedValue(new Error('Failed to load platform authorization status'));
 
-    const page = await DashboardPage();
+    const page = await DashboardPage({});
     render(page);
 
     expect(
@@ -178,7 +178,7 @@ describe('DashboardPage', () => {
       guidance: 'Connect 1688 through its real authorization flow before running live actions.',
     });
 
-    const page = await DashboardPage();
+    const page = await DashboardPage({});
     render(page);
 
     expect(

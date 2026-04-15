@@ -8,6 +8,7 @@ const mockFetchPlatformConnections = vi.fn();
 // Create mock ACTOR_PRESETS
 const mockActorPreset: ActingOperator = {
   id: 'operator',
+  role: 'operator',
   label: 'Operator',
   description: 'Standard operator mode',
 };

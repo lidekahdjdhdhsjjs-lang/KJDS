@@ -123,7 +123,7 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
     }
   }, [platform, onStateChange]);
 
-  const handleRetry = useCallback((focusRef?: React.RefObject<HTMLButtonElement>) => {
+  const handleRetry = useCallback((focusRef?: React.RefObject<HTMLButtonElement | null>) => {
     setAuthState('idle');
     setErrorMessage('');
     focusRef?.current?.focus();

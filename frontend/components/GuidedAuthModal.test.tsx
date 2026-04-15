@@ -44,7 +44,7 @@ describe('GuidedAuthModal', () => {
     vi.clearAllMocks();
     windowOpenSpy = vi.fn();
     // Mock window.open
-    window.open = windowOpenSpy;
+    window.open = windowOpenSpy as unknown as typeof window.open;
     vi.useFakeTimers();
   });
 
