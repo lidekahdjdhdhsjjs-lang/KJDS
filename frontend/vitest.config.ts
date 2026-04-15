@@ -15,5 +15,8 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     // Exclude Playwright E2E tests from Vitest
     exclude: ['**/e2e/**', '**/node_modules/**'],
+    pool: 'forks',
+    maxWorkers: 1,
+    vmMemoryLimit: 4096,
   },
 });

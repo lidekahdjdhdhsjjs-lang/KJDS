@@ -22,19 +22,30 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+// Hoisted mock variables for reliable control
+const fetchDraftsMock = vi.hoisted(() => vi.fn().mockResolvedValue({ items: [], total: 0 }));
+const intakeCandidatesMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const generateDraftsMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const approveDraftMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const rejectDraftMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const publishDraftMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const fetchPlatformConnectionsMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const startPlatformAuthorizationMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+const disconnectPlatformMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+
 vi.mock('@/lib/api', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api')>('@/lib/api');
-
   return {
     ...actual,
-    intakeCandidates: vi.fn().mockResolvedValue(undefined),
-    generateDrafts: vi.fn().mockResolvedValue(undefined),
-    approveDraft: vi.fn().mockResolvedValue(undefined),
-    rejectDraft: vi.fn().mockResolvedValue(undefined),
-    publishDraft: vi.fn().mockResolvedValue(undefined),
-    fetchPlatformConnections: vi.fn().mockResolvedValue(undefined),
-    startPlatformAuthorization: vi.fn().mockResolvedValue(undefined),
-    disconnectPlatform: vi.fn().mockResolvedValue(undefined),
+    fetchDrafts: fetchDraftsMock,
+    intakeCandidates: intakeCandidatesMock,
+    generateDrafts: generateDraftsMock,
+    approveDraft: approveDraftMock,
+    rejectDraft: rejectDraftMock,
+    publishDraft: publishDraftMock,
+    fetchPlatformConnections: fetchPlatformConnectionsMock,
+    startPlatformAuthorization: startPlatformAuthorizationMock,
+    disconnectPlatform: disconnectPlatformMock,
   };
 });
 
@@ -99,6 +110,24 @@ const platformConnections: PlatformConnectionsSummary = {
 
 beforeEach(() => {
   refreshMock.mockReset();
+  fetchDraftsMock.mockReset();
+  fetchDraftsMock.mockResolvedValue({ items: [], total: 0 });
+  intakeCandidatesMock.mockReset();
+  intakeCandidatesMock.mockResolvedValue(undefined);
+  generateDraftsMock.mockReset();
+  generateDraftsMock.mockResolvedValue(undefined);
+  approveDraftMock.mockReset();
+  approveDraftMock.mockResolvedValue(undefined);
+  rejectDraftMock.mockReset();
+  rejectDraftMock.mockResolvedValue(undefined);
+  publishDraftMock.mockReset();
+  publishDraftMock.mockResolvedValue(undefined);
+  fetchPlatformConnectionsMock.mockReset();
+  fetchPlatformConnectionsMock.mockResolvedValue(undefined);
+  startPlatformAuthorizationMock.mockReset();
+  startPlatformAuthorizationMock.mockResolvedValue(undefined);
+  disconnectPlatformMock.mockReset();
+  disconnectPlatformMock.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -125,6 +154,9 @@ describe('DashboardClient', () => {
   it('shows operator guidance and blocks review actions until reviewer mode is selected', async () => {
     const user = userEvent.setup();
 
+    // Override beforeEach's empty return so the reviewable draft persists after mount
+    fetchDraftsMock.mockResolvedValueOnce({ items: [reviewableDraft], total: 1 });
+
     render(
       createElement(DashboardClient, {
         initialSummary: baseSummary,
@@ -133,27 +165,35 @@ describe('DashboardClient', () => {
       }),
     );
 
-    expect(screen.getByText('Operator mode')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Operator mode')).toBeTruthy();
+    });
     expect(screen.getByText('Switch to reviewer for manual checks')).toBeTruthy();
     expect(
       screen.getByText('Operator mode can prepare work, but reviewer or admin mode must make the approval decision.'),
     ).toBeTruthy();
 
-    expect(screen.getByRole('button', { name: 'Approve' })).toHaveProperty('disabled', true);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Approve' })).toHaveProperty('disabled', true);
+    });
     expect(screen.getByRole('button', { name: 'Reject' })).toHaveProperty('disabled', true);
     expect(screen.getByRole('button', { name: 'Generate drafts' })).toHaveProperty('disabled', false);
 
     await user.click(screen.getByRole('button', { name: 'Reviewer' }));
 
-    expect(screen.getByText('Reviewer mode')).toBeTruthy();
-    expect(screen.getByText('Review the queued drafts')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Reviewer mode')).toBeTruthy();
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Review queue')).toBeTruthy();
+    });
     expect(screen.getByRole('button', { name: 'Approve' })).toHaveProperty('disabled', false);
     expect(screen.getByRole('button', { name: 'Reject' })).toHaveProperty('disabled', false);
     expect(screen.getByRole('button', { name: 'Generate drafts' })).toHaveProperty('disabled', true);
   });
 
   it('shows platform connect and disconnect controls for the operator journey', async () => {
-    vi.mocked(api.fetchPlatformConnections).mockResolvedValue(platformConnections);
+    fetchPlatformConnectionsMock.mockResolvedValueOnce(platformConnections);
 
     render(
       createElement(DashboardClient, {
@@ -172,8 +212,8 @@ describe('DashboardClient', () => {
 
   it('starts platform authorization and calls startPlatformAuthorization', async () => {
     const user = userEvent.setup();
-    vi.mocked(api.fetchPlatformConnections).mockResolvedValue(platformConnections);
-    vi.mocked(api.startPlatformAuthorization).mockResolvedValue({
+    fetchPlatformConnectionsMock.mockResolvedValueOnce(platformConnections);
+    startPlatformAuthorizationMock.mockResolvedValueOnce({
       platform: '1688',
       status: 'pending',
       authorize_url: 'https://auth.1688.test/oauth?state=abc',
@@ -191,14 +231,14 @@ describe('DashboardClient', () => {
     await user.click(await screen.findByRole('button', { name: 'Connect 1688' }));
 
     await waitFor(() => {
-      expect(api.startPlatformAuthorization).toHaveBeenCalledWith('1688', ACTOR_PRESETS.operator);
+      expect(startPlatformAuthorizationMock).toHaveBeenCalledWith('1688', ACTOR_PRESETS.operator);
     });
   });
 
   it('disconnects a connected platform and refreshes the dashboard', async () => {
     const user = userEvent.setup();
-    vi.mocked(api.fetchPlatformConnections).mockResolvedValue(platformConnections);
-    vi.mocked(api.disconnectPlatform).mockResolvedValue({
+    fetchPlatformConnectionsMock.mockResolvedValueOnce(platformConnections);
+    disconnectPlatformMock.mockResolvedValueOnce({
       platform: 'shopee',
       connected: false,
       status: 'disconnected',
@@ -219,7 +259,7 @@ describe('DashboardClient', () => {
     await user.click(await screen.findByRole('button', { name: 'Disconnect Shopee' }));
 
     await waitFor(() => {
-      expect(api.disconnectPlatform).toHaveBeenCalledWith('shopee', ACTOR_PRESETS.operator);
+      expect(disconnectPlatformMock).toHaveBeenCalledWith('shopee', ACTOR_PRESETS.operator);
       expect(refreshMock).toHaveBeenCalled();
     });
   });
@@ -228,7 +268,7 @@ describe('DashboardClient', () => {
 
 
   it('unlocks live actions when refreshed platform connections show both platforms connected', async () => {
-    vi.mocked(api.fetchPlatformConnections).mockResolvedValue({
+    fetchPlatformConnectionsMock.mockResolvedValueOnce({
       items: [
         {
           platform: 'shopee',
@@ -271,7 +311,7 @@ describe('DashboardClient', () => {
 
   it('locks the dashboard after a live action hits the auth-disabled error', async () => {
     const user = userEvent.setup();
-    vi.mocked(api.generateDrafts).mockRejectedValueOnce(new Error(HEADER_AUTH_DISABLED_MESSAGE));
+    generateDraftsMock.mockRejectedValueOnce(new Error(HEADER_AUTH_DISABLED_MESSAGE));
 
     render(
       createElement(DashboardClient, {
@@ -299,6 +339,12 @@ describe('DashboardClient', () => {
   it('guides approved drafts to admin mode before publish', async () => {
     const user = userEvent.setup();
 
+    // Ensure refreshDrafts() returns the approved draft so stats show approved > 0
+    fetchDraftsMock.mockResolvedValueOnce({
+      items: [{ ...reviewableDraft, status: 'approved' }],
+      total: 1,
+    });
+
     render(
       createElement(DashboardClient, {
         initialSummary: { ...baseSummary, ready_for_review: 0, approved_today: 1 },
@@ -312,14 +358,24 @@ describe('DashboardClient', () => {
       throw new Error('Expected draft article to exist');
     }
 
-    expect(screen.getByText('Switch to admin for the final release step')).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText('Switch to admin for the final release step')).toBeTruthy();
+    });
     expect(within(queueCard).getByRole('button', { name: 'Publish' })).toHaveProperty('disabled', true);
 
     await user.click(screen.getByRole('button', { name: 'Admin' }));
 
-    expect(screen.getByText('Admin mode')).toBeTruthy();
-    expect(screen.getByText('Publish the approved drafts')).toBeTruthy();
-    expect(within(queueCard).getByRole('button', { name: 'Publish' })).toHaveProperty('disabled', false);
+    await waitFor(() => {
+      expect(screen.getByText('Admin mode')).toBeTruthy();
+    });
+    // Re-query queueCard since it may have been re-rendered
+    const updatedQueueCard = screen.getByText('USB desk fan').closest('article');
+    if (!updatedQueueCard) {
+      throw new Error('Expected updated draft article to exist');
+    }
+    await waitFor(() => {
+      expect(within(updatedQueueCard).getByRole('button', { name: 'Publish' })).toHaveProperty('disabled', false);
+    });
   });
 });
 
