@@ -129,21 +129,32 @@ export function DashboardClient({
   const [platformConnections, setPlatformConnections] = useState<PlatformConnectionStatus[]>(
     buildInitialPlatformConnections(initialAuthorization),
   );
+  const [drafts, setDrafts] = useState<DraftItem[]>(initialDrafts);
   const [isPending, startTransition] = useTransition();
 
   const actingOperator = ACTOR_PRESETS[activeRole];
-  const hasQueueData = initialDrafts.length > 0;
+  const hasQueueData = drafts.length > 0;
   const isBackendUnavailable = Boolean(runtimeLoadError);
   const isPlatformReady = authorizationStatus.can_load_live_data;
   const isLiveActionBlocked = isBackendUnavailable || !isPlatformReady;
 
   const authorizationTone = getAuthorizationTone(isPlatformReady);
-  const draftStats = useMemo(() => getDraftStats(initialDrafts), [initialDrafts]);
+  const draftStats = useMemo(() => getDraftStats(drafts), [drafts]);
 
   const nextStep = getNextStep(initialSummary, draftStats, activeRole);
   const canOperate = activeRole === 'operator' || activeRole === 'admin';
   const canReview = activeRole === 'reviewer' || activeRole === 'admin';
   const canPublish = activeRole === 'admin';
+
+  const refreshDrafts = async () => {
+    try {
+      const { fetchDrafts: apiFetchDrafts } = await import('@/lib/api');
+      const newDrafts = await apiFetchDrafts(actingOperator);
+      setDrafts(newDrafts.items);
+    } catch {
+      // Silently fail - drafts are supplementary
+    }
+  };
 
   const runAction = (action: () => Promise<void>, successMessage: string, actor: ActingOperator) => {
     setFeedback(null);
@@ -152,6 +163,7 @@ export function DashboardClient({
       void (async () => {
         try {
           await action();
+          await refreshDrafts();
           setFeedback({
             tone: 'success',
             text: `${successMessage} Ran as ${actor.label.toLowerCase()} mode (${actor.id}).`,
@@ -191,6 +203,16 @@ export function DashboardClient({
           setPlatformConnections(buildInitialPlatformConnections(initialAuthorization));
           setAuthorizationStatus(initialAuthorization);
         }
+      }
+      // Also refresh drafts when role changes
+      try {
+        const { fetchDrafts: apiFetchDrafts } = await import('@/lib/api');
+        const draftData = await apiFetchDrafts(actingOperator);
+        if (isMounted) {
+          setDrafts(draftData.items);
+        }
+      } catch {
+        // Silently ignore draft fetch errors here
       }
     })();
 

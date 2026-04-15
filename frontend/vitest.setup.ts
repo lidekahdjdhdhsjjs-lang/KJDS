@@ -1,13 +1,14 @@
 import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
 import { JSDOM } from 'jsdom';
+import { vi } from 'vitest';
 
-// Create a jsdom instance and expose globals
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+// Set up jsdom globals for @testing-library/react
+// This must be done before any tests run
+const dom = new JSDOM('<!DOCTYPE html><html><body><div id="root"></div></body></html>', {
   url: 'http://localhost',
+  pretendToBeVisual: true,
 });
 
-// Set up globals that jsdom environment should provide
 Object.defineProperty(globalThis, 'document', {
   value: dom.window.document,
   writable: true,
@@ -20,6 +21,14 @@ Object.defineProperty(globalThis, 'window', {
   configurable: true,
 });
 
+Object.defineProperty(globalThis, 'navigator', {
+  value: dom.window.navigator,
+  writable: true,
+  configurable: true,
+});
+
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/dashboard',
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
 }));
