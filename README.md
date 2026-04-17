@@ -282,18 +282,18 @@ pytest tests/ -q --tb=short   # 简洁输出
 pytest tests/ --cov=app       # 覆盖率报告
 ```
 
-当前状态: **92 tests passing** (Sprint 1 + Sprint 2)
+当前状态: **116 tests passing** (pytest, SQLite dev.db)
 
 ### 前端测试
 
 ```bash
 cd frontend
-npm run test          # 单元测试
+bun run test          # 单元测试 (Vitest)
 npm run build         # 构建检查
 npm run test:e2e      # E2E 测试 (需要后端运行)
 ```
 
-当前状态: **38 E2E tests, 11 pages building**
+当前状态: **125 vitest unit tests + 58 Playwright E2E tests, 13 pages building**
 
 ## 技术栈
 

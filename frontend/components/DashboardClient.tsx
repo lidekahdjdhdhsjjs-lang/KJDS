@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { ActionButton } from '@/components/ActionButton';
 import { DashboardCard } from '@/components/DashboardCard';
+import { colors, borderRadius, spacing, typography, shadows } from '@/lib/design-system';
 import {
   ROLE_ACTIONS,
   ROLE_SEQUENCE,
@@ -98,19 +99,106 @@ function getDashboardErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unexpected action failure';
 }
 
+const s = {
+  page: { padding: spacing[6], fontFamily: typography.fontFamily, backgroundColor: colors.background, minHeight: '100vh' },
+  headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing[6], flexWrap: 'wrap' as const },
+  title: { marginBottom: spacing[2] },
+  desc: { margin: 0, color: colors.textSecondary, maxWidth: 760 },
+  navLink: (bg: string, color: string) => ({
+    display: 'inline-block', padding: `${spacing[2]}px ${spacing[4]}px`, borderRadius: borderRadius.base,
+    backgroundColor: bg, color, textDecoration: 'none', fontSize: 14, fontWeight: 600,
+  }),
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: spacing[4], marginTop: spacing[5] },
+  quickNavGrid: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: spacing[4], marginTop: spacing[5] },
+  quickNavCard: (borderColor: string) => ({
+    padding: spacing[5], borderRadius: borderRadius.md, backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`, textDecoration: 'none', boxShadow: shadows.base,
+  }),
+  quickNavLabel: { fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] },
+  quickNavValue: (color: string) => ({ fontSize: 24, fontWeight: 700, color }),
+  authBanner: (bg: string, border: string, color: string) => ({
+    marginTop: spacing[5], borderRadius: borderRadius.lg, padding: spacing[4],
+    backgroundColor: bg, border, color, boxShadow: shadows.lg,
+  }),
+  authBannerLabel: { fontSize: 12, fontWeight: 700, marginBottom: spacing[2] },
+  authItem: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: spacing[3],
+    flexWrap: 'wrap' as const, padding: spacing[3], borderRadius: borderRadius.md,
+    backgroundColor: 'rgba(255,255,255,0.55)', border: '1px solid rgba(148, 163, 184, 0.24)',
+  },
+  authItemLabel: { display: 'grid', gap: spacing[1], fontSize: 13 },
+  reviewQueue: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing[5], boxShadow: shadows.lg },
+  reviewQueueHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[4], gap: spacing[4], flexWrap: 'wrap' as const },
+  reviewQueueTitle: { margin: 0 },
+  reviewQueueDesc: { color: colors.textSecondary, marginTop: spacing[1], marginBottom: 0 },
+  draftCount: { color: colors.textSecondary, fontSize: 14 },
+  emptyState: (border: string) => ({
+    border: `1px dashed ${border}`, borderRadius: borderRadius.md, padding: spacing[5],
+    backgroundColor: colors.background, color: colors.textSecondary,
+  }),
+  draftCard: {
+    border: `1px solid ${colors.border}`, borderRadius: borderRadius.md, padding: spacing[4],
+    display: 'grid', gap: spacing[3], backgroundColor: colors.surface,
+  },
+  draftCardHeader: { display: 'flex', justifyContent: 'space-between', gap: spacing[3], alignItems: 'start' as const },
+  draftMeta: { fontSize: 12, color: colors.textSecondary },
+  draftTitle: { margin: '6px 0 0', fontSize: 18 },
+  draftBadge: (color: string, bg: string, border: string) => ({
+    padding: '6px 10px', borderRadius: borderRadius.full, backgroundColor: bg, color, border,
+    fontSize: 12, fontWeight: 700, textTransform: 'capitalize' as const,
+  }),
+  draftComment: { fontSize: 14, color: colors.textSecondary },
+  draftHint: { fontSize: 13, color: colors.textSecondary },
+  aside: { display: 'grid', gap: spacing[4] },
+  roleCard: { backgroundColor: colors.text, color: '#fff', borderRadius: borderRadius.lg, padding: spacing[5], boxShadow: shadows.lg },
+  roleCardLabel: { fontSize: 12, color: colors.infoLight, marginBottom: spacing[2] },
+  roleCardTitle: { marginTop: 0, marginBottom: spacing[2] },
+  roleCardDesc: { marginTop: 0, color: colors.borderDark, lineHeight: 1.6 },
+  roleButton: (isActive: boolean) => ({
+    borderRadius: borderRadius.full, padding: `${spacing[2]}px ${spacing[3]}px`,
+    border: isActive ? `1px solid ${colors.primary}` : '1px solid rgba(255,255,255,0.18)',
+    backgroundColor: isActive ? 'rgba(59, 130, 246, 0.18)' : 'transparent',
+    color: '#fff', cursor: 'pointer', opacity: 1, fontWeight: 700,
+  }),
+  nextStepCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing[5], boxShadow: shadows.lg },
+  nextStepLabel: { fontSize: 12, color: colors.primary, marginBottom: spacing[2] },
+  nextStepTitle: { margin: `0 0 ${spacing[2]}px`, fontSize: 18 },
+  nextStepDesc: { margin: 0, color: colors.textSecondary, lineHeight: 1.6 },
+  roleActionsCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing[5], boxShadow: shadows.lg },
+  roleActionsLabel: { fontSize: 12, color: colors.primary, marginBottom: spacing[2] },
+  roleActionsList: { margin: 0, paddingLeft: 18, lineHeight: 1.7, color: colors.textSecondary },
+  snapshotCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing[5], boxShadow: shadows.lg },
+  snapshotLabel: { fontSize: 12, color: colors.primary, marginBottom: spacing[2] },
+  snapshotGrid: { display: 'grid', gap: spacing[1] + 2, fontSize: 14, color: colors.textSecondary },
+  feedbackBanner: (bg: string, border: string, color: string) => ({
+    marginTop: spacing[4], padding: spacing[3], borderRadius: borderRadius.md,
+    backgroundColor: bg, border, color,
+  }),
+  layout: { display: 'grid', gridTemplateColumns: '2fr 1fr', gap: spacing[5], marginTop: spacing[8], alignItems: 'start' as const },
+  twoCol: { display: 'grid', gap: spacing[4] },
+  warningBanner: {
+    marginTop: spacing[5], borderRadius: borderRadius.lg, padding: spacing[4],
+    backgroundColor: colors.warningLight, border: `1px solid ${colors.warning}`,
+    color: colors.warning, boxShadow: shadows.lg,
+  },
+  warningLabel: { fontSize: 12, fontWeight: 700, marginBottom: spacing[2] },
+  warningText: { lineHeight: 1.6 },
+  warningHint: { marginTop: spacing[2], fontSize: 13, lineHeight: 1.5 },
+};
+
 function getAuthorizationTone(canLoadLiveData: boolean): { backgroundColor: string; border: string; color: string } {
   if (canLoadLiveData) {
     return {
-      backgroundColor: '#ecfdf5',
-      border: '1px solid #6ee7b7',
-      color: '#065f46',
+      backgroundColor: colors.successLight,
+      border: `1px solid ${colors.success}`,
+      color: colors.success,
     };
   }
 
   return {
-    backgroundColor: '#fff7ed',
-    border: '1px solid #fdba74',
-    color: '#9a3412',
+    backgroundColor: colors.warningLight,
+    border: `1px solid ${colors.warning}`,
+    color: colors.warning,
   };
 }
 
@@ -259,105 +347,21 @@ export function DashboardClient({
   };
 
   return (
-    <main style={{ padding: 24, fontFamily: 'Arial, sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
+    <main style={s.page}>
+      <div style={s.headerRow}>
         <div>
-          <h1 style={{ marginBottom: 8 }}>Shopee AI Ops Console</h1>
-          <p style={{ margin: 0, color: '#475569', maxWidth: 760 }}>
+          <h1 style={s.title}>Shopee AI Ops Console</h1>
+          <p style={s.desc}>
             Single-store operating console for sourcing intake, draft generation, manual review, and controlled publish.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <Link
-            href="/procurement"
-            style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Procurement
-          </Link>
-          <Link
-            href="/training-archive"
-            style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Archives
-          </Link>
-          <Link
-            href="/agent-runs"
-            style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Agents
-          </Link>
-          <Link
-            href="/batches"
-            style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Batches
-          </Link>
-          <Link
-            href="/exceptions"
-            style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Exceptions
-          </Link>
-          <Link
-            href="/settings/platform-connections"
-            style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-            }}
-          >
-            Settings
-          </Link>
+        <div style={{ display: 'flex', gap: spacing[3], flexWrap: 'wrap' }}>
+          <Link href="/procurement" style={s.navLink(colors.background, colors.textSecondary)}>Procurement</Link>
+          <Link href="/training-archive" style={s.navLink(colors.background, colors.textSecondary)}>Archives</Link>
+          <Link href="/agent-runs" style={s.navLink(colors.background, colors.textSecondary)}>Agents</Link>
+          <Link href="/batches" style={s.navLink(colors.background, colors.textSecondary)}>Batches</Link>
+          <Link href="/exceptions" style={s.navLink(colors.background, colors.textSecondary)}>Exceptions</Link>
+          <Link href="/settings/platform-connections" style={s.navLink(colors.background, colors.textSecondary)}>Settings</Link>
           <ActionButton
             label="Intake 3 candidates"
             tone="neutral"
@@ -372,7 +376,7 @@ export function DashboardClient({
         </div>
       </div>
 
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 16, marginTop: 24 }}>
+      <section style={s.statsGrid}>
         <DashboardCard label="Pending candidates" value={initialSummary.pending_candidates} />
         <DashboardCard label="Ready for review" value={initialSummary.ready_for_review} />
         <DashboardCard label="Approved today" value={initialSummary.approved_today} />
@@ -381,106 +385,43 @@ export function DashboardClient({
       </section>
 
       {/* Quick Navigation Cards per spec.md section 7.1 */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginTop: 24 }}>
-        <Link
-          href="/batches"
-          style={{
-            padding: 20,
-            borderRadius: 12,
-            backgroundColor: '#fff',
-            border: '1px solid #e2e8f0',
-            textDecoration: 'none',
-            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
-          }}
-        >
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Batch Overview</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#2563eb' }}>Batches</div>
+      <section style={s.quickNavGrid}>
+        <Link href="/batches" style={s.quickNavCard(colors.primary)}>
+          <div style={s.quickNavLabel}>Batch Overview</div>
+          <div style={s.quickNavValue(colors.primary)}>Batches</div>
         </Link>
-        <Link
-          href="/exceptions"
-          style={{
-            padding: 20,
-            borderRadius: 12,
-            backgroundColor: '#fff',
-            border: '1px solid #e2e8f0',
-            textDecoration: 'none',
-            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
-          }}
-        >
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Exception Alerts</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#dc2626' }}>Exceptions</div>
+        <Link href="/exceptions" style={s.quickNavCard(colors.error)}>
+          <div style={s.quickNavLabel}>Exception Alerts</div>
+          <div style={s.quickNavValue(colors.error)}>Exceptions</div>
         </Link>
-        <Link
-          href="/batches"
-          style={{
-            padding: 20,
-            borderRadius: 12,
-            backgroundColor: '#fff',
-            border: '1px solid #e2e8f0',
-            textDecoration: 'none',
-            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
-          }}
-        >
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>New Opportunities</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#22c55e' }}>Discover</div>
+        <Link href="/batches" style={s.quickNavCard(colors.success)}>
+          <div style={s.quickNavLabel}>New Opportunities</div>
+          <div style={s.quickNavValue(colors.success)}>Discover</div>
         </Link>
-        <Link
-          href="/procurement"
-          style={{
-            padding: 20,
-            borderRadius: 12,
-            backgroundColor: '#fff',
-            border: '1px solid #e2e8f0',
-            textDecoration: 'none',
-            boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)',
-          }}
-        >
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Profit & Costs</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#f97316' }}>Finance</div>
+        <Link href="/procurement" style={s.quickNavCard(colors.warning)}>
+          <div style={s.quickNavLabel}>Profit & Costs</div>
+          <div style={s.quickNavValue(colors.warning)}>Finance</div>
         </Link>
       </section>
 
-      <section
-        style={{
-          marginTop: 20,
-          borderRadius: 16,
-          padding: 16,
-          backgroundColor: authorizationTone.backgroundColor,
-          border: authorizationTone.border,
-          color: authorizationTone.color,
-          boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)',
-        }}
-      >
-        <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Platform authorization</div>
+      <section style={s.authBanner(authorizationTone.backgroundColor, authorizationTone.border, authorizationTone.color)}>
+        <div style={s.authBannerLabel}>Platform authorization</div>
         <div style={{ lineHeight: 1.6 }}>{authorizationStatus.guidance}</div>
-        <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
+        <div style={{ display: 'grid', gap: spacing[3], marginTop: spacing[3] }}>
           {platformConnections.map((connection) => {
             const platformLabel = PLATFORM_LABELS[connection.platform];
             const actionLabel = connection.connected ? `Reconnect ${platformLabel}` : `Connect ${platformLabel}`;
             const statusLabel = connection.status.charAt(0).toUpperCase() + connection.status.slice(1);
 
             return (
-              <div
-                key={connection.platform}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 12,
-                  flexWrap: 'wrap',
-                  padding: 12,
-                  borderRadius: 12,
-                  backgroundColor: 'rgba(255,255,255,0.55)',
-                  border: '1px solid rgba(148, 163, 184, 0.24)',
-                }}
-              >
-                <div style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+              <div key={connection.platform} style={s.authItem}>
+                <div style={s.authItemLabel}>
                   <div style={{ fontWeight: 700 }}>{platformLabel}</div>
                   <div>Status: {statusLabel}</div>
                   {connection.account_label ? <div>Account: {connection.account_label}</div> : null}
                   {connection.last_error ? <div>Error: {connection.last_error}</div> : null}
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: spacing[2], flexWrap: 'wrap' }}>
                   <ActionButton
                     label={actionLabel}
                     tone="primary"
@@ -503,67 +444,39 @@ export function DashboardClient({
       </section>
 
       {runtimeLoadError ? (
-        <section
-          style={{
-            marginTop: 20,
-            borderRadius: 16,
-            padding: 16,
-            backgroundColor: '#fff7ed',
-            border: '1px solid #fdba74',
-            color: '#9a3412',
-            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)',
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Backend connection warning</div>
-          <div style={{ lineHeight: 1.6 }}>{runtimeLoadError}</div>
-          <div style={{ marginTop: 8, fontSize: 13, lineHeight: 1.5 }}>
+        <section style={s.warningBanner}>
+          <div style={s.warningLabel}>Backend connection warning</div>
+          <div style={s.warningText}>{runtimeLoadError}</div>
+          <div style={s.warningHint}>
             Live actions stay disabled until the backend connection is restored.
           </div>
         </section>
       ) : null}
 
       {!isPlatformReady ? (
-        <section
-          style={{
-            marginTop: 20,
-            borderRadius: 16,
-            padding: 16,
-            backgroundColor: '#fff7ed',
-            border: '1px solid #fdba74',
-            color: '#9a3412',
-            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.06)',
-          }}
-        >
-          <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>Live action lock</div>
-          <div style={{ lineHeight: 1.6 }}>
+        <section style={s.warningBanner}>
+          <div style={s.warningLabel}>Live action lock</div>
+          <div style={s.warningText}>
             Live sourcing, draft generation, review, and publish stay disabled until both Shopee and 1688 are authorized.
           </div>
         </section>
       ) : null}
 
-      <section style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginTop: 32, alignItems: 'start' }}>
-        <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 8px 30px rgba(15, 23, 42, 0.08)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 16, flexWrap: 'wrap' }}>
+      <section style={s.layout}>
+        <div style={s.reviewQueue}>
+          <div style={s.reviewQueueHeader}>
             <div>
-              <h2 style={{ margin: 0 }}>Review queue</h2>
-              <p style={{ color: '#64748b', marginTop: 6, marginBottom: 0 }}>
+              <h2 style={s.reviewQueueTitle}>Review queue</h2>
+              <p style={s.reviewQueueDesc}>
                 Each row now follows the selected acting role, so beginners can see why a button is available or blocked.
               </p>
             </div>
-            <span style={{ color: '#475569', fontSize: 14 }}>{draftStats.total} drafts</span>
+            <span style={s.draftCount}>{draftStats.total} drafts</span>
           </div>
 
-          <div style={{ display: 'grid', gap: 12 }}>
+          <div style={{ display: 'grid', gap: spacing[3] }}>
             {!hasQueueData ? (
-              <article
-                style={{
-                  border: '1px dashed #cbd5e1',
-                  borderRadius: 12,
-                  padding: 20,
-                  backgroundColor: '#f8fafc',
-                  color: '#475569',
-                }}
-              >
+              <article style={s.emptyState(colors.borderDark)}>
                 {runtimeLoadError
                   ? 'No live queue data is available because the backend did not respond or the required platform authorization is missing. Restore access, then refresh this page.'
                   : !isPlatformReady
@@ -576,48 +489,27 @@ export function DashboardClient({
               const publishAllowedByState = draft.status === 'approved';
 
               return (
-                <article
-                  key={draft.id}
-                  style={{
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 12,
-                    padding: 16,
-                    display: 'grid',
-                    gap: 12,
-                    backgroundColor: '#fff',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start' }}>
+                <article key={draft.id} style={s.draftCard}>
+                  <div style={s.draftCardHeader}>
                     <div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>{draft.id} · candidate {draft.candidate_id}</div>
-                      <h3 style={{ margin: '6px 0 0', fontSize: 18 }}>{draft.title}</h3>
+                      <div style={s.draftMeta}>{draft.id} · candidate {draft.candidate_id}</div>
+                      <h3 style={s.draftTitle}>{draft.title}</h3>
                     </div>
-                    <span
-                      style={{
-                        padding: '6px 10px',
-                        borderRadius: 999,
-                        backgroundColor: '#f8fafc',
-                        color: statusTone(draft.status),
-                        border: '1px solid #e2e8f0',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        textTransform: 'capitalize',
-                      }}
-                    >
+                    <span style={s.draftBadge(statusTone(draft.status), colors.background, colors.border)}>
                       {formatStatusLabel(draft.status)}
                     </span>
                   </div>
 
                   {draft.review_comment ? (
-                    <div style={{ fontSize: 14, color: '#334155' }}>Review note: {draft.review_comment}</div>
+                    <div style={s.draftComment}>Review note: {draft.review_comment}</div>
                   ) : null}
                   {draft.published_at ? (
-                    <div style={{ fontSize: 14, color: '#334155' }}>Published at: {draft.published_at}</div>
+                    <div style={s.draftComment}>Published at: {draft.published_at}</div>
                   ) : null}
 
-                  <div style={{ fontSize: 13, color: '#64748b' }}>{getDraftHint(draft, activeRole)}</div>
+                  <div style={s.draftHint}>{getDraftHint(draft, activeRole)}</div>
 
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: spacing[2], flexWrap: 'wrap' }}>
                     <ActionButton
                       label="Approve"
                       tone="success"
@@ -643,12 +535,12 @@ export function DashboardClient({
           </div>
         </div>
 
-        <aside style={{ display: 'grid', gap: 16 }}>
-          <section style={{ backgroundColor: '#0f172a', color: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 8px 30px rgba(15, 23, 42, 0.18)' }}>
-            <div style={{ fontSize: 12, color: '#93c5fd', marginBottom: 8 }}>Acting role</div>
-            <h2 style={{ marginTop: 0, marginBottom: 8 }}>{actingOperator.label} mode</h2>
-            <p style={{ marginTop: 0, color: '#cbd5e1', lineHeight: 1.6 }}>{actingOperator.description}</p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
+        <aside style={s.aside}>
+          <section style={s.roleCard}>
+            <div style={s.roleCardLabel}>Acting role</div>
+            <h2 style={{ marginTop: 0, marginBottom: spacing[2] }}>{actingOperator.label} mode</h2>
+            <p style={{ marginTop: 0, color: colors.borderDark, lineHeight: 1.6 }}>{actingOperator.description}</p>
+            <div style={{ display: 'flex', gap: spacing[2], flexWrap: 'wrap', marginTop: spacing[4] }}>
               {ROLE_SEQUENCE.map((role) => {
                 const actor = ACTOR_PRESETS[role];
                 const isActive = role === activeRole;
@@ -659,16 +551,7 @@ export function DashboardClient({
                     type="button"
                     onClick={() => setActiveRole(role)}
                     disabled={isPending}
-                    style={{
-                      borderRadius: 999,
-                      padding: '8px 12px',
-                      border: isActive ? '1px solid #60a5fa' : '1px solid rgba(255,255,255,0.18)',
-                      backgroundColor: isActive ? 'rgba(59, 130, 246, 0.18)' : 'transparent',
-                      color: '#fff',
-                      cursor: isPending ? 'not-allowed' : 'pointer',
-                      opacity: isPending ? 0.6 : 1,
-                      fontWeight: 700,
-                    }}
+                    style={s.roleButton(isActive)}
                   >
                     {actor.label}
                   </button>
@@ -677,40 +560,35 @@ export function DashboardClient({
             </div>
           </section>
 
-          <section style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 8px 30px rgba(15, 23, 42, 0.08)' }}>
-            <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 8 }}>What to do next</div>
-            <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>{nextStep.title}</h3>
-            <p style={{ margin: 0, color: '#475569', lineHeight: 1.6 }}>{nextStep.description}</p>
+          <section style={s.nextStepCard}>
+            <div style={s.nextStepLabel}>What to do next</div>
+            <h3 style={s.nextStepTitle}>{nextStep.title}</h3>
+            <p style={s.nextStepDesc}>{nextStep.description}</p>
           </section>
 
-          <section style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 8px 30px rgba(15, 23, 42, 0.08)' }}>
-            <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 8 }}>This role can do</div>
-            <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7, color: '#334155' }}>
+          <section style={s.roleActionsCard}>
+            <div style={s.roleActionsLabel}>This role can do</div>
+            <ul style={s.roleActionsList}>
               {ROLE_ACTIONS[activeRole].map((action) => (
                 <li key={action}>{action}</li>
               ))}
             </ul>
           </section>
 
-          <section style={{ backgroundColor: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 8px 30px rgba(15, 23, 42, 0.08)' }}>
-            <div style={{ fontSize: 12, color: '#2563eb', marginBottom: 8 }}>Live queue snapshot</div>
-            <div style={{ display: 'grid', gap: 6, fontSize: 14, color: '#334155' }}>
+          <section style={s.snapshotCard}>
+            <div style={s.snapshotLabel}>Live queue snapshot</div>
+            <div style={s.snapshotGrid}>
               <div>Ready for review: {draftStats.reviewable}</div>
               <div>Approved: {draftStats.approved}</div>
               <div>Published: {draftStats.published}</div>
             </div>
 
             {feedback ? (
-              <div
-                style={{
-                  marginTop: 16,
-                  padding: 12,
-                  borderRadius: 12,
-                  backgroundColor: feedback.tone === 'success' ? '#ecfdf5' : '#fef2f2',
-                  color: feedback.tone === 'success' ? '#065f46' : '#b91c1c',
-                  border: feedback.tone === 'success' ? '1px solid #a7f3d0' : '1px solid #fecaca',
-                }}
-              >
+              <div style={s.feedbackBanner(
+                feedback.tone === 'success' ? colors.successLight : colors.errorLight,
+                feedback.tone === 'success' ? `1px solid ${colors.success}` : `1px solid ${colors.error}`,
+                feedback.tone === 'success' ? colors.success : colors.error,
+              )}>
                 {feedback.text}
               </div>
             ) : null}

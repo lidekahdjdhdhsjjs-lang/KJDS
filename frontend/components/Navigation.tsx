@@ -2,17 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { colors, borderRadius, spacing } from '@/lib/design-system';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/batches', label: 'Batches' },
-  { href: '/opportunities', label: 'Opportunities' },
-  { href: '/exceptions', label: 'Exceptions' },
-  { href: '/agent-runs', label: 'Agents' },
-  { href: '/procurement', label: 'Procurement' },
-  { href: '/training-archive', label: 'Archive' },
-  { href: '/settings/browser-profiles', label: 'Browser' },
-  { href: '/settings/platform-connections', label: 'Settings' },
+  { href: '/dashboard', label: '🏠 控制台' },
+  { href: '/quick-ops', label: '⚡ 一键运营' },
+  { href: '/opportunities', label: '📦 商机管理' },
+  { href: '/batches', label: '📋 批次管理' },
+  { href: '/exceptions', label: '⚠️ 异常中心' },
+  { href: '/procurement', label: '🛒 采购单' },
+  { href: '/agent-runs', label: '🤖 AI任务' },
+  { href: '/settings/config-center', label: '⚙️ 设置' },
 ];
 
 export function Navigation() {
@@ -24,9 +24,9 @@ export function Navigation() {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '12px 24px',
-        backgroundColor: '#fff',
-        borderBottom: '1px solid #e2e8f0',
+        padding: `${spacing[2]}px ${spacing[4]}px`,
+        backgroundColor: colors.surface,
+        borderBottom: `1px solid ${colors.border}`,
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -39,7 +39,7 @@ export function Navigation() {
         style={{
           fontSize: 18,
           fontWeight: 700,
-          color: '#0f172a',
+          color: colors.text,
           textDecoration: 'none',
         }}
       >
@@ -53,10 +53,10 @@ export function Navigation() {
               key={item.href}
               href={item.href}
               style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                backgroundColor: isActive ? '#eff6ff' : 'transparent',
-                color: isActive ? '#2563eb' : '#64748b',
+                padding: `${spacing[1]}px ${spacing[2]}px`,
+                borderRadius: borderRadius.md,
+                backgroundColor: isActive ? colors.primaryLight : 'transparent',
+                color: isActive ? colors.primary : colors.textSecondary,
                 textDecoration: 'none',
                 fontWeight: 600,
                 fontSize: 14,

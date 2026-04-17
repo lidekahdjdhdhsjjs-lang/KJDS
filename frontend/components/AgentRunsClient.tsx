@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ErrorDisplay, getUserFriendlyError } from './ErrorBoundary';
-import { colors, borderRadius, shadows } from '@/lib/design-system';
+import { colors, borderRadius, shadows, spacing } from '@/lib/design-system';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1';
 
@@ -51,7 +51,7 @@ const AGENT_COLORS: Record<string, string> = {
 };
 
 function getAgentColor(agentName: string): string {
-  return AGENT_COLORS[agentName] || '#64748b';
+  return AGENT_COLORS[agentName] || colors.textSecondary;
 }
 
 async function fetchAgentRuns(filters?: {
@@ -122,25 +122,25 @@ export function AgentRunsClient() {
 
   if (loading && runs.length === 0) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div style={{ padding: spacing[6], textAlign: 'center' }}>
         <p>Loading agent runs...</p>
       </div>
     );
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <main style={{ padding: spacing[6], fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[6] }}>
         <div>
           <h1 style={{ margin: 0 }}>Agent Runs</h1>
-          <p style={{ margin: '8px 0 0', color: colors.textSecondary }}>
+          <p style={{ margin: `${spacing[2]}px 0 0`, color: colors.textSecondary }}>
             Track AI agent execution history, costs, and performance
           </p>
         </div>
         <Link
           href="/dashboard"
           style={{
-            padding: '8px 16px',
+            padding: `${spacing[2]}px ${spacing[4]}px`,
             borderRadius: borderRadius.base,
             backgroundColor: colors.primaryLight,
             color: colors.primaryHover,
@@ -158,66 +158,66 @@ export function AgentRunsClient() {
       )}
 
       {/* Summary Cards */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: spacing[4], marginBottom: spacing[6] }}>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
             border: `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Total Runs</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#1e293b' }}>{runs.length}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Total Runs</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.text }}>{runs.length}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #dbeafe',
+            border: `1px solid ${colors.primaryLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Running</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#3b82f6' }}>{runningCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Running</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.primary }}>{runningCount}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #d1fae5',
+            border: `1px solid ${colors.successLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Completed</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#22c55e' }}>{completedCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Completed</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.success }}>{completedCount}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #fee2e2',
+            border: `1px solid ${colors.errorLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Failed</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#ef4444' }}>{failedCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Failed</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.error }}>{failedCount}</div>
         </div>
       </section>
 
       {/* Filters */}
- <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: spacing[4], marginBottom: spacing[6] }}>
         <div>
-          <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Agent Type</label>
+          <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Agent Type</label>
           <select
             value={filterAgent}
             onChange={(e) => setFilterAgent(e.target.value)}
             style={{
-              padding: '8px 12px',
+              padding: `${spacing[2]}px ${spacing[3]}px`,
               borderRadius: borderRadius.base,
               border: `1px solid ${colors.border}`,
               backgroundColor: colors.surface,
@@ -237,12 +237,12 @@ export function AgentRunsClient() {
           </select>
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Status</label>
+          <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Status</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             style={{
-              padding: '8px 12px',
+              padding: `${spacing[2]}px ${spacing[3]}px`,
               borderRadius: borderRadius.base,
               border: `1px solid ${colors.border}`,
               backgroundColor: colors.surface,
@@ -262,36 +262,36 @@ export function AgentRunsClient() {
       {runs.length === 0 ? (
         <div
           style={{
-            padding: 40,
+            padding: spacing[10],
             textAlign: 'center',
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px dashed #cbd5e1',
+            border: `1px dashed ${colors.borderDark}`,
             color: colors.textSecondary,
           }}
         >
           No agent runs found. Runs will appear here when AI agents process items.
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gap: spacing[3] }}>
           {runs.map((run) => (
             <article
               key={run.id}
               style={{
-                padding: 16,
+                padding: spacing[4],
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
                 border: `1px solid ${colors.border}`,
                 boxShadow: shadows.base,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing[4] }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', gap: spacing[2], alignItems: 'center', marginBottom: spacing[2] }}>
                     <span
                       style={{
-                        padding: '4px 10px',
-                        borderRadius: 6,
+                        padding: `${spacing[1]}px ${spacing[2] + 2}px`,
+                        borderRadius: borderRadius.sm,
                         backgroundColor: getAgentColor(run.agent_name),
                         color: '#fff',
                         fontSize: 12,
@@ -302,9 +302,9 @@ export function AgentRunsClient() {
                     </span>
                     <span
                       style={{
-                        padding: '4px 8px',
-                        borderRadius: 4,
-                        backgroundColor: STATUS_COLORS[run.status] || '#94a3b8',
+                        padding: `${spacing[1]}px ${spacing[2]}px`,
+                        borderRadius: borderRadius.sm,
+                        backgroundColor: STATUS_COLORS[run.status] || colors.textMuted,
                         color: '#fff',
                         fontSize: 11,
                         fontWeight: 600,
@@ -316,26 +316,26 @@ export function AgentRunsClient() {
                       <span style={{ fontSize: 11, color: colors.textMuted }}>{run.model_name}</span>
                     )}
                   </div>
-                  <div style={{ fontSize: 13, color: colors.text, marginBottom: 8 }}>
+                  <div style={{ fontSize: 13, color: colors.text, marginBottom: spacing[2] }}>
                     <span style={{ fontWeight: 600 }}>{run.entity_type}:</span>{' '}
                     <Link
                       href={`/${run.entity_type === 'opportunity_item' ? 'opportunities' : run.entity_type}/${run.entity_id}`}
-                      style={{ color: '#2563eb', textDecoration: 'none' }}
+                      style={{ color: colors.primary, textDecoration: 'none' }}
                     >
                       {run.entity_id}
                     </Link>
                   </div>
                   {run.input_summary && (
-                    <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>
+                    <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>
                       <strong>Input:</strong> {run.input_summary}
                     </div>
                   )}
                   {run.output_summary && (
-                    <div style={{ fontSize: 12, color: colors.text, marginBottom: 4 }}>
+                    <div style={{ fontSize: 12, color: colors.text, marginBottom: spacing[1] }}>
                       <strong>Output:</strong> {run.output_summary}
                     </div>
                   )}
-                  <div style={{ fontSize: 11, color: colors.textMuted, display: 'flex', gap: 16 }}>
+                  <div style={{ fontSize: 11, color: colors.textMuted, display: 'flex', gap: spacing[4] }}>
                     <span>Started: {formatDate(run.started_at)}</span>
                     <span>Duration: {formatDuration(run)}</span>
                   </div>
@@ -343,15 +343,15 @@ export function AgentRunsClient() {
                 {run.cost_payload && (
                   <div
                     style={{
-                      padding: '8px 12px',
+                      padding: `${spacing[2]}px ${spacing[3]}px`,
                       borderRadius: borderRadius.base,
-                      backgroundColor: '#f8fafc',
+                      backgroundColor: colors.background,
                       fontSize: 12,
                       minWidth: 100,
                     }}
                   >
                     <div style={{ color: colors.textSecondary, marginBottom: 2 }}>Cost</div>
-                    <div style={{ fontWeight: 600, color: '#1e293b' }}>
+                    <div style={{ fontWeight: 600, color: colors.text }}>
                       {(() => {
                         try {
                           const cost = JSON.parse(run.cost_payload);
@@ -369,7 +369,7 @@ export function AgentRunsClient() {
         </div>
       )}
 
-      <div style={{ marginTop: 24, fontSize: 12, color: colors.textMuted }}>
+      <div style={{ marginTop: spacing[6], fontSize: 12, color: colors.textMuted }}>
         Last updated: {new Date().toLocaleString()}
       </div>
     </main>

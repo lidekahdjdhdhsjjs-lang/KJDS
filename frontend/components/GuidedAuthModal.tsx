@@ -8,6 +8,7 @@ import {
   disconnectPlatform,
   type ConnectionStatus,
 } from '@/lib/api';
+import { colors, borderRadius, spacing, typography } from '@/lib/design-system';
 
 const POLL_INTERVAL = 2000; // ms
 const POLL_TIMEOUT = 300000; // 5 minutes
@@ -45,7 +46,7 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
         setErrorMessage(status.error_message || 'Authorization failed');
       }
     } catch (err) {
-      console.error('Polling error:', err);
+      console.warn('Status check unavailable:', err);
     }
   }, [platform, onStateChange]);
 
@@ -89,7 +90,7 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
           setErrorMessage(status.error_message || 'Authorization failed');
         }
       } catch (err) {
-        console.error('Polling error:', err);
+        console.warn('Status check unavailable:', err);
       }
     }, POLL_INTERVAL);
   }, [platform, onStateChange, stopPolling]);
@@ -133,20 +134,28 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
     return () => stopPolling();
   }, [stopPolling]);
 
+  const buttonBase = {
+    padding: `${spacing[1] + 2}px ${spacing[4]}px`,
+    border: 'none',
+    borderRadius: borderRadius.base,
+    cursor: 'pointer' as const,
+    fontWeight: 600,
+  };
+
   if (authState === 'connected') {
     return (
-      <div style={{ padding: '16px', background: '#F0FDF4', borderRadius: '8px', border: '1px solid #86EFAC' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+      <div style={{ padding: spacing[4], background: colors.successLight, borderRadius: borderRadius.base, border: `1px solid ${colors.success}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2], marginBottom: spacing[2] }}>
           <span style={{ fontSize: '20px' }}>✅</span>
-          <span style={{ fontWeight: 600, color: '#166534' }}>已连接 {platformLabel}</span>
+          <span style={{ fontWeight: 600, color: colors.success }}>已连接 {platformLabel}</span>
         </div>
-        <div style={{ color: '#166534', fontSize: '14px', marginBottom: '12px' }}>
+        <div style={{ color: colors.success, fontSize: typography.fontSize.sm, marginBottom: spacing[3] }}>
           账号：{connectionStatus?.account_label || '—'}
         </div>
         <button
           onClick={handleDisconnect}
           aria-label="断开连接"
-          style={{ padding: '6px 16px', background: '#FEE2E2', color: '#991B1B', border: '1px solid #FCA5A5', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ ...buttonBase, background: colors.errorLight, color: colors.error }}
         >
           断开连接
         </button>
@@ -156,19 +165,19 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
 
   if (authState === 'error') {
     return (
-      <div style={{ padding: '16px', background: '#FEF2F2', borderRadius: '8px', border: '1px solid #FCA5A5' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+      <div style={{ padding: spacing[4], background: colors.errorLight, borderRadius: borderRadius.base, border: `1px solid ${colors.error}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2], marginBottom: spacing[2] }}>
           <span style={{ fontSize: '20px' }}>❌</span>
-          <span style={{ fontWeight: 600, color: '#991B1B' }}>授权失败</span>
+          <span style={{ fontWeight: 600, color: colors.error }}>授权失败</span>
         </div>
-        <div style={{ color: '#B91C1C', fontSize: '14px', marginBottom: '12px' }}>
+        <div style={{ color: colors.error, fontSize: typography.fontSize.sm, marginBottom: spacing[3] }}>
           {errorMessage || '未知错误'}
         </div>
         <button
           ref={errorRetryButtonRef}
           onClick={() => handleRetry(errorRetryButtonRef)}
           aria-label="重新授权"
-          style={{ padding: '6px 16px', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ ...buttonBase, background: platformColor, color: '#fff' }}
         >
           重新授权
         </button>
@@ -178,19 +187,19 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
 
   if (authState === 'timeout') {
     return (
-      <div style={{ padding: '16px', background: '#FFFBEB', borderRadius: '8px', border: '1px solid #FCD34D' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+      <div style={{ padding: spacing[4], background: colors.warningLight, borderRadius: borderRadius.base, border: `1px solid ${colors.warning}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2], marginBottom: spacing[2] }}>
           <span style={{ fontSize: '20px' }}>⏰</span>
-          <span style={{ fontWeight: 600, color: '#92400E' }}>授权超时</span>
+          <span style={{ fontWeight: 600, color: colors.warning }}>授权超时</span>
         </div>
-        <div style={{ color: '#B45309', fontSize: '14px', marginBottom: '12px' }}>
+        <div style={{ color: colors.warning, fontSize: typography.fontSize.sm, marginBottom: spacing[3] }}>
           请在弹出的页面完成授权，或网络连接不稳定。
         </div>
         <button
           ref={timeoutRetryButtonRef}
           onClick={() => handleRetry(timeoutRetryButtonRef)}
           aria-label="重新授权"
-          style={{ padding: '6px 16px', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ ...buttonBase, background: platformColor, color: '#fff' }}
         >
           重新授权
         </button>
@@ -200,22 +209,22 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
 
   if (authState === 'pending') {
     return (
-      <div style={{ padding: '16px', background: '#EFF6FF', borderRadius: '8px', border: '1px solid #93C5FD' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+      <div style={{ padding: spacing[4], background: colors.infoLight, borderRadius: borderRadius.base, border: `1px solid ${colors.info}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2], marginBottom: spacing[3] }}>
           <span style={{ fontSize: '20px' }}>🔄</span>
-          <span style={{ fontWeight: 600, color: '#1E40AF' }}>等待授权中...</span>
+          <span style={{ fontWeight: 600, color: colors.info }}>等待授权中...</span>
         </div>
-        <div style={{ color: '#1D4ED8', fontSize: '14px', marginBottom: '8px' }}>
+        <div style={{ color: colors.info, fontSize: typography.fontSize.sm, marginBottom: spacing[2] }}>
           请在弹出的页面完成 {platformLabel} 账号登录和授权
         </div>
-        <div style={{ color: '#6B7280', fontSize: '12px', marginBottom: '12px' }} aria-live="polite">
+        <div style={{ color: colors.textSecondary, fontSize: typography.fontSize.xs, marginBottom: spacing[3] }} aria-live="polite">
           已等待 {elapsedSeconds} 秒
         </div>
         <button
           ref={cancelButtonRef}
           onClick={() => { stopPolling(); setAuthState('idle'); }}
           aria-label="取消授权"
-          style={{ padding: '6px 16px', background: '#E5E7EB', color: '#374151', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
+          style={{ ...buttonBase, background: colors.border, color: colors.text }}
         >
           取消
         </button>
@@ -225,9 +234,9 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
 
   // idle / loading
   return (
-    <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px', border: '1px solid #E5E7EB' }}>
-      <div style={{ fontWeight: 600, marginBottom: '12px' }}>连接 {platformLabel} 账号</div>
-      <ol style={{ fontSize: '14px', color: '#6B7280', marginBottom: '16px', paddingLeft: '20px' }}>
+    <div style={{ padding: spacing[4], background: colors.background, borderRadius: borderRadius.base, border: `1px solid ${colors.border}` }}>
+      <div style={{ fontWeight: 600, marginBottom: spacing[3] }}>连接 {platformLabel} 账号</div>
+      <ol style={{ fontSize: typography.fontSize.sm, color: colors.textSecondary, marginBottom: spacing[4], paddingLeft: `${spacing[5]}px` }}>
         <li>点击下方「开始授权」按钮</li>
         <li>在跳转的页面登录 {platformLabel} 并点击授权</li>
         <li>授权完成后页面将自动更新状态</li>
@@ -238,14 +247,11 @@ export function GuidedAuthModal({ platform, platformLabel, platformColor, onStat
         aria-label="开始授权"
         disabled={authState === 'loading'}
         style={{
-          padding: '8px 20px',
+          ...buttonBase,
           background: platformColor,
           color: '#fff',
-          border: 'none',
-          borderRadius: '6px',
           cursor: authState === 'loading' ? 'not-allowed' : 'pointer',
           opacity: authState === 'loading' ? 0.7 : 1,
-          fontWeight: 600,
         }}
       >
         {authState === 'loading' ? '启动中...' : '🚀 开始授权'}

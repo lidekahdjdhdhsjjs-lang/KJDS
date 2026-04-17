@@ -19,6 +19,12 @@ from app.api.routes.feedback_records import router as feedback_records_router
 # Sprint 3: Browser Automation
 from app.api.routes.browser_automation import router as browser_automation_router
 
+# Auto Pipeline
+from app.api.routes.pipeline import router as pipeline_router
+
+# System Configuration
+from app.api.routes.system_config import router as system_config_router
+
 router = APIRouter()
 router.include_router(health_router)
 router.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["dashboard"])
@@ -47,3 +53,9 @@ router.include_router(feedback_records_router, prefix="/api/v1")
 
 # Sprint 3: Browser Automation routes
 router.include_router(browser_automation_router, prefix="/api/v1")
+
+# Auto Pipeline routes
+router.include_router(pipeline_router, prefix="/api/v1")
+
+# System Configuration routes
+router.include_router(system_config_router, prefix="/api/v1")

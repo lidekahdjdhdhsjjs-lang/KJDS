@@ -6,4 +6,5 @@ vi.mock('next/navigation', () => ({
     refresh: vi.fn(),
   }),
   usePathname: () => '/dashboard',
+  useParams: () => ({ id: 'opp-001' }),
 }));

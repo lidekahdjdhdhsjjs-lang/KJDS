@@ -1,6 +1,7 @@
 'use client';
 
 import { Component, ReactNode } from 'react';
+import { colors, borderRadius, spacing } from '@/lib/design-system';
 
 interface Props {
   children: ReactNode;
@@ -35,24 +36,24 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           style={{
-            padding: 24,
+            padding: spacing[6],
             textAlign: 'center',
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: 12,
-            color: '#b91c1c',
+            backgroundColor: colors.errorLight,
+            border: `1px solid ${colors.error}`,
+            borderRadius: borderRadius.md,
+            color: colors.error,
           }}
         >
-          <h2 style={{ margin: '0 0 12px', fontSize: 18 }}>Something went wrong</h2>
-          <p style={{ margin: '0 0 16px', fontSize: 14, color: '#7f1d1d' }}>
+          <h2 style={{ margin: `0 0 ${spacing[3]}px`, fontSize: 18, color: colors.error }}>Something went wrong</h2>
+          <p style={{ margin: `0 0 ${spacing[4]}px`, fontSize: 14, color: colors.error }}>
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
             style={{
-              padding: '10px 20px',
-              borderRadius: 8,
-              backgroundColor: '#dc2626',
+              padding: `${spacing[2] + 2}px ${spacing[5]}px`,
+              borderRadius: borderRadius.base,
+              backgroundColor: colors.error,
               color: '#fff',
               border: 'none',
               cursor: 'pointer',
@@ -69,7 +70,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Reusable error display component
 export function ErrorDisplay({
   error,
   onRetry,
@@ -82,29 +82,29 @@ export function ErrorDisplay({
   return (
     <div
       style={{
-        padding: 16,
-        marginBottom: 16,
-        borderRadius: 8,
-        backgroundColor: '#fef2f2',
-        border: '1px solid #fecaca',
-        color: '#b91c1c',
+        padding: spacing[4],
+        marginBottom: spacing[4],
+        borderRadius: borderRadius.base,
+        backgroundColor: colors.errorLight,
+        border: `1px solid ${colors.error}`,
+        color: colors.error,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 12,
+        gap: spacing[3],
       }}
     >
       <div style={{ flex: 1 }}>
         <strong>Error:</strong> {error}
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: spacing[2] }}>
         {onRetry && (
           <button
             onClick={onRetry}
             style={{
-              padding: '6px 12px',
-              borderRadius: 6,
-              backgroundColor: '#dc2626',
+              padding: `${spacing[1] + 2}px ${spacing[3]}px`,
+              borderRadius: borderRadius.base,
+              backgroundColor: colors.error,
               color: '#fff',
               border: 'none',
               cursor: 'pointer',
@@ -119,10 +119,10 @@ export function ErrorDisplay({
           <button
             onClick={onDismiss}
             style={{
-              padding: '6px 12px',
-              borderRadius: 6,
-              backgroundColor: '#f1f5f9',
-              color: '#64748b',
+              padding: `${spacing[1] + 2}px ${spacing[3]}px`,
+              borderRadius: borderRadius.base,
+              backgroundColor: colors.background,
+              color: colors.textSecondary,
               border: 'none',
               cursor: 'pointer',
               fontSize: 12,
@@ -137,7 +137,6 @@ export function ErrorDisplay({
   );
 }
 
-// Network error detection utility
 export function isNetworkError(error: unknown): boolean {
   if (error instanceof Error) {
     return (
@@ -150,14 +149,12 @@ export function isNetworkError(error: unknown): boolean {
   return false;
 }
 
-// User-friendly error message generator
 export function getUserFriendlyError(error: unknown): string {
   if (isNetworkError(error)) {
     return 'Unable to connect to the server. Please check your internet connection and try again.';
   }
 
   if (error instanceof Error) {
-    // Clean up common API error messages
     const message = error.message;
 
     if (message.includes('404') || message.includes('not found')) {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ErrorDisplay, getUserFriendlyError } from './ErrorBoundary';
-import { colors, borderRadius, shadows } from '@/lib/design-system';
+import { colors, borderRadius, shadows, spacing } from '@/lib/design-system';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1';
 
@@ -172,15 +172,15 @@ export function BatchesClient() {
 
   if (loading) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div style={{ padding: spacing[6], textAlign: 'center' }}>
         <p>Loading batches...</p>
       </div>
     );
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <main style={{ padding: spacing[6], fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[6] }}>
         <div>
           <h1 style={{ margin: 0 }}>Batch Dashboard</h1>
           <p style={{ margin: '8px 0 0', color: colors.textSecondary }}>
@@ -212,7 +212,7 @@ export function BatchesClient() {
       {batches.length === 0 ? (
         <div
           style={{
-            padding: 40,
+            padding: spacing[10],
             textAlign: 'center',
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
@@ -223,19 +223,19 @@ export function BatchesClient() {
           No batches yet. Create a new batch to get started.
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: 16 }}>
+        <div style={{ display: 'grid', gap: spacing[4] }}>
           {batches.map((batch) => (
             <article
               key={batch.id}
               style={{
-                padding: 20,
+                padding: spacing[5],
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
                 border: `1px solid ${colors.border}`,
                 boxShadow: shadows.base,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing[4] }}>
                 <div>
                   <Link
                     href={`/batches/${batch.id}`}
@@ -243,7 +243,7 @@ export function BatchesClient() {
                   >
                     <h3 style={{ margin: '0 0 8px', fontSize: 18 }}>{batch.id}</h3>
                   </Link>
-                  <div style={{ fontSize: 14, color: colors.textSecondary, display: 'grid', gap: 4 }}>
+                  <div style={{ fontSize: 14, color: colors.textSecondary, display: 'grid', gap: spacing[1] }}>
                     <div>Store: {batch.store_id}</div>
                     <div>Trigger: {batch.trigger_type}</div>
                     <div>Created: {formatDate(batch.created_at)}</div>
@@ -251,11 +251,11 @@ export function BatchesClient() {
                     {batch.completed_at && <div>Completed: {formatDate(batch.completed_at)}</div>}
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: spacing[3] }}>
                   <span
                     style={{
                       padding: '6px 12px',
-                      borderRadius: 999,
+                      borderRadius: borderRadius.full,
                       backgroundColor: getStatusColor(batch.status),
                       color: '#fff',
                       fontSize: 12,
@@ -265,14 +265,14 @@ export function BatchesClient() {
                   >
                     {batch.status}
                   </span>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: spacing[2], flexWrap: 'wrap' }}>
                     {batch.status === 'draft' && (
                       <button
                         onClick={() => handleBatchAction(batch.id, 'start')}
                         disabled={actionLoading !== null}
                         style={{
                           padding: '6px 12px',
-                          borderRadius: 6,
+                          borderRadius: borderRadius.sm,
                           backgroundColor: colors.success,
                           color: '#fff',
                           border: 'none',
@@ -290,7 +290,7 @@ export function BatchesClient() {
                         disabled={actionLoading !== null}
                         style={{
                           padding: '6px 12px',
-                          borderRadius: 6,
+                          borderRadius: borderRadius.sm,
                           backgroundColor: colors.warning,
                           color: '#fff',
                           border: 'none',
@@ -308,7 +308,7 @@ export function BatchesClient() {
                         disabled={actionLoading !== null}
                         style={{
                           padding: '6px 12px',
-                          borderRadius: 6,
+                          borderRadius: borderRadius.sm,
                           backgroundColor: colors.info,
                           color: '#fff',
                           border: 'none',
@@ -326,7 +326,7 @@ export function BatchesClient() {
                         disabled={actionLoading !== null}
                         style={{
                           padding: '6px 12px',
-                          borderRadius: 6,
+                          borderRadius: borderRadius.sm,
                           backgroundColor: colors.status.completed,
                           color: '#fff',
                           border: 'none',

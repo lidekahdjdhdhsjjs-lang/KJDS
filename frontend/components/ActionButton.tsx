@@ -1,5 +1,7 @@
 'use client';
 
+import { colors, borderRadius, spacing } from '@/lib/design-system';
+
 interface ActionButtonProps {
   label: string;
   onClick?: () => void;
@@ -8,10 +10,10 @@ interface ActionButtonProps {
 }
 
 const toneStyles = {
-  primary: { backgroundColor: '#2563eb', color: '#fff', border: '1px solid #2563eb' },
-  success: { backgroundColor: '#059669', color: '#fff', border: '1px solid #059669' },
-  danger: { backgroundColor: '#dc2626', color: '#fff', border: '1px solid #dc2626' },
-  neutral: { backgroundColor: '#fff', color: '#111827', border: '1px solid #d1d5db' },
+  primary: { backgroundColor: colors.primary, color: colors.surface, border: `1px solid ${colors.primary}` },
+  success: { backgroundColor: colors.success, color: colors.surface, border: `1px solid ${colors.success}` },
+  danger: { backgroundColor: colors.error, color: colors.surface, border: `1px solid ${colors.error}` },
+  neutral: { backgroundColor: colors.surface, color: colors.text, border: `1px solid ${colors.border}` },
 };
 
 export function ActionButton({ label, onClick, disabled = false, tone = 'primary' }: ActionButtonProps) {
@@ -22,8 +24,8 @@ export function ActionButton({ label, onClick, disabled = false, tone = 'primary
       disabled={disabled}
       style={{
         ...toneStyles[tone],
-        borderRadius: 8,
-        padding: '8px 12px',
+        borderRadius: borderRadius.base,
+        padding: `${spacing[2]}px ${spacing[3]}px`,
         fontSize: 14,
         fontWeight: 600,
         cursor: disabled ? 'not-allowed' : 'pointer',

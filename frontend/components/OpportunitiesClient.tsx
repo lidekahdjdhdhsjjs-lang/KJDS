@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, ArrowRight, Package } from 'lucide-react';
-import { colors, borderRadius, shadows } from '@/lib/design-system';
+import { colors, borderRadius, shadows, spacing } from '@/lib/design-system';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1';
 
@@ -101,12 +101,12 @@ export function OpportunitiesClient() {
   }
 
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: spacing[6] }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[6] }}>
         <div>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: colors.text }}>Opportunities</h1>
-          <p style={{ color: colors.textSecondary, marginTop: 4 }}>共 {opportunities.length} 个商机，{statusCounts['published'] || 0} 个已发布</p>
+          <p style={{ color: colors.textSecondary, marginTop: spacing[1] }}>共 {opportunities.length} 个商机，{statusCounts['published'] || 0} 个已发布</p>
         </div>
         <button
           onClick={loadData}
@@ -119,7 +119,7 @@ export function OpportunitiesClient() {
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
+            gap: spacing[2],
           }}
         >
           <RefreshCw size={16} /> 刷新
@@ -127,16 +127,16 @@ export function OpportunitiesClient() {
       </div>
 
       {error && (
-        <div style={{ padding: 16, backgroundColor: colors.errorLight, border: `1px solid #fecaca`, borderRadius: borderRadius.md, marginBottom: 24 }}>
+        <div style={{ padding: spacing[4], backgroundColor: colors.errorLight, border: `1px solid ${colors.error}`, borderRadius: borderRadius.md, marginBottom: spacing[6] }}>
           <span style={{ color: colors.error, fontWeight: 600 }}>Error: {error}</span>
         </div>
       )}
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: spacing[3], marginBottom: spacing[6] }}>
         {Object.entries(STATUS_CONFIG).slice(0, 6).map(([status, config]) => (
-          <div key={status} style={{ boxShadow: shadows.sm, backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: 16, cursor: 'pointer', border: filterStatus === status ? `2px solid ${config.color}` : '2px solid transparent', transition: 'all 0.15s' }} onClick={() => setFilterStatus(filterStatus === status ? 'all' : status)}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <div key={status} style={{ boxShadow: shadows.sm, backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing[4], cursor: 'pointer', border: filterStatus === status ? `2px solid ${config.color}` : '2px solid transparent', transition: 'all 0.15s' }} onClick={() => setFilterStatus(filterStatus === status ? 'all' : status)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2], marginBottom: spacing[2] }}>
               <span style={{ color: config.color }}>{config.icon}</span>
               <span style={{ fontSize: 12, color: colors.textSecondary }}>{config.label}</span>
             </div>
@@ -146,7 +146,7 @@ export function OpportunitiesClient() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: spacing[3], marginBottom: 16, alignItems: 'center' }}>
         <select
           value={filterStatus}
           onChange={e => setFilterStatus(e.target.value)}
@@ -188,14 +188,14 @@ export function OpportunitiesClient() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: 48, textAlign: 'center', color: colors.textSecondary }}>暂无商机</td>
+                <td colSpan={6} style={{ padding: spacing[12], textAlign: 'center', color: colors.textSecondary }}>暂无商机</td>
               </tr>
             ) : filtered.map((item, idx) => {
               const statusConfig = getStatusConfig(item.status);
               return (
                 <tr key={item.id} style={{ borderBottom: idx < filtered.length - 1 ? `1px solid ${colors.border}` : 'none' }}>
                   <td style={{ padding: '12px 16px' }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 6, backgroundColor: statusConfig.bg, color: statusConfig.color, fontSize: 12, fontWeight: 600 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: spacing[1] + 2, padding: '4px 10px', borderRadius: borderRadius.sm, backgroundColor: statusConfig.bg, color: statusConfig.color, fontSize: 12, fontWeight: 600 }}>
                       {statusConfig.icon}
                       {statusConfig.label}
                     </span>

@@ -184,9 +184,9 @@ export function BatchDetailClient() {
 
   if (!batch) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div style={{ padding: spacing[6], textAlign: 'center' }}>
         <p>Batch not found</p>
-        <Link href="/batches" style={{ color: '#2563eb' }}>Back to Batches</Link>
+        <Link href="/batches" style={{ color: colors.primary }}>Back to Batches</Link>
       </div>
     );
   }
@@ -232,7 +232,7 @@ export function BatchDetailClient() {
         } as React.CSSProperties}
       >
         <h2 style={commonStyles.sectionHeader as React.CSSProperties}>Stage Overview</h2>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: spacing[2], flexWrap: 'wrap' }}>
           {STATUS_STAGES.map((stage) => {
             const count = statusCounts[stage] || 0;
             const isActive = stageFilter === stage;
@@ -243,17 +243,17 @@ export function BatchDetailClient() {
                 onClick={() => setStageFilter(isActive ? 'all' : stage)}
                 style={{
                   padding: '8px 12px',
-                  borderRadius: 8,
-                  border: isActive ? `2px solid ${getStageColor(stage)}` : '1px solid #e2e8f0',
-                  backgroundColor: isActive ? `${getStageColor(stage)}20` : '#fff',
+                  borderRadius: borderRadius.base,
+                  border: isActive ? `2px solid ${getStageColor(stage)}` : `1px solid ${colors.border}`,
+                  backgroundColor: isActive ? `${getStageColor(stage)}20` : colors.surface,
                   cursor: 'pointer',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
+                  gap: spacing[1],
                 }}
               >
-                <span style={{ fontSize: 12, color: '#64748b', textTransform: 'capitalize' }}>
+                <span style={{ fontSize: 12, color: colors.textSecondary, textTransform: 'capitalize' }}>
                   {stage.replace(/_/g, ' ')}
                 </span>
                 <span style={{ fontSize: 18, fontWeight: 700, color: getStageColor(stage) }}>
@@ -274,8 +274,8 @@ export function BatchDetailClient() {
               onClick={() => setStageFilter('all')}
               style={{
                 padding: '6px 12px',
-                borderRadius: 6,
-                backgroundColor: '#f1f5f9',
+                borderRadius: borderRadius.sm,
+                backgroundColor: colors.background,
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: 12,
@@ -289,7 +289,7 @@ export function BatchDetailClient() {
         {filteredItems.length === 0 ? (
           <div
             style={{
-              padding: 40,
+              padding: spacing[10],
               textAlign: 'center',
               borderRadius: borderRadius.lg,
               backgroundColor: colors.surface,

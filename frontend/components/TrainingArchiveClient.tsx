@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { colors, borderRadius, shadows, spacing, commonStyles } from '@/lib/design-system';
+import { colors, borderRadius, shadows, spacing } from '@/lib/design-system';
 import { LoadingSpinner } from './LoadingStates';
 import { ErrorDisplay, getUserFriendlyError } from './ErrorBoundary';
 
@@ -99,28 +99,28 @@ export function TrainingArchiveClient() {
 
   if (loading && packages.length === 0) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div style={{ padding: spacing[6], textAlign: 'center' }}>
         <p>Loading training archives...</p>
       </div>
     );
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'Arial, sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <main style={{ padding: spacing[6], fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[6] }}>
         <div>
           <h1 style={{ margin: 0 }}>Training Archive</h1>
-          <p style={{ margin: '8px 0 0', color: '#64748b' }}>
+          <p style={{ margin: `${spacing[2]} 0 0`, color: colors.textSecondary }}>
             ML training data packages for AI model improvement
           </p>
         </div>
         <Link
           href="/dashboard"
           style={{
-            padding: '8px 16px',
-            borderRadius: 8,
-            backgroundColor: '#f1f5f9',
-            color: '#475569',
+            padding: `${spacing[2]} ${spacing[4]}`,
+            borderRadius: borderRadius.base,
+            backgroundColor: colors.background,
+            color: colors.textSecondary,
             textDecoration: 'none',
             fontSize: 14,
             fontWeight: 600,
@@ -133,12 +133,12 @@ export function TrainingArchiveClient() {
       {error && (
         <div
           style={{
-            padding: 16,
-            marginBottom: 16,
-            borderRadius: 8,
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#b91c1c',
+            padding: spacing[4],
+            marginBottom: spacing[4],
+            borderRadius: borderRadius.base,
+            backgroundColor: colors.errorLight,
+            border: `1px solid ${colors.error}`,
+            color: colors.error,
           }}
         >
           {error}
@@ -146,66 +146,66 @@ export function TrainingArchiveClient() {
       )}
 
       {/* Summary Cards */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: spacing[4], marginBottom: spacing[6] }}>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
             border: `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Total Packages</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#1e293b' }}>{packages.length}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Total Packages</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.text }}>{packages.length}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #ede9fe',
+            border: `1px solid ${colors.primaryLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Batch Archives</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#8b5cf6' }}>{batchCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Batch Archives</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: TYPE_COLORS.batch }}>{batchCount}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #cffafe',
+            border: `1px solid ${colors.infoLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Store Archives</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#06b6d4' }}>{storeCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Store Archives</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: TYPE_COLORS.store }}>{storeCount}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #fef3c7',
+            border: `1px solid ${colors.warningLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Manual Exports</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#f59e0b' }}>{manualCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Manual Exports</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: TYPE_COLORS.manual }}>{manualCount}</div>
         </div>
       </section>
 
       {/* Filter */}
-      <div style={{ marginBottom: 24 }}>
-        <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Package Type</label>
+      <div style={{ marginBottom: spacing[6] }}>
+        <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Package Type</label>
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
           style={{
-            padding: '8px 12px',
-            borderRadius: 8,
+            padding: `${spacing[2]} ${spacing[3]}`,
+            borderRadius: borderRadius.base,
             border: `1px solid ${colors.border}`,
             backgroundColor: colors.surface,
             fontSize: 14,
@@ -223,37 +223,37 @@ export function TrainingArchiveClient() {
       {packages.length === 0 ? (
         <div
           style={{
-            padding: 40,
+            padding: spacing[10],
             textAlign: 'center',
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px dashed #cbd5e1',
+            border: `1px dashed ${colors.borderDark}`,
             color: colors.textSecondary,
           }}
         >
           No training packages found. Archives are created when batches complete.
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gap: spacing[3] }}>
           {packages.map((pkg) => (
             <article
               key={pkg.id}
               style={{
-                padding: 16,
+                padding: spacing[4],
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
                 border: `1px solid ${colors.border}`,
                 boxShadow: shadows.base,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing[4] }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', gap: spacing[2], alignItems: 'center', marginBottom: spacing[2] }}>
                     <span
                       style={{
                         padding: '4px 10px',
-                        borderRadius: 6,
-                        backgroundColor: TYPE_COLORS[pkg.package_type] || '#64748b',
+                        borderRadius: borderRadius.sm,
+                        backgroundColor: TYPE_COLORS[pkg.package_type] || colors.textSecondary,
                         color: '#fff',
                         fontSize: 12,
                         fontWeight: 700,
@@ -261,43 +261,43 @@ export function TrainingArchiveClient() {
                     >
                       {pkg.package_type}
                     </span>
-                    <span style={{ fontWeight: 600, color: '#1e293b' }}>{pkg.id}</span>
+                    <span style={{ fontWeight: 600, color: colors.text }}>{pkg.id}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[2] }}>
                     <strong>Storage:</strong> {pkg.storage_uri}
                   </div>
                   {pkg.store_id && (
-                    <div style={{ fontSize: 12, color: '#64748b' }}>
+                    <div style={{ fontSize: 12, color: colors.textSecondary }}>
                       Store: {pkg.store_id}
                     </div>
                   )}
                   {pkg.batch_id && (
-                    <div style={{ fontSize: 12, color: '#64748b' }}>
+                    <div style={{ fontSize: 12, color: colors.textSecondary }}>
                       <Link
                         href={`/batches/${pkg.batch_id}`}
-                        style={{ color: '#2563eb', textDecoration: 'none' }}
+                        style={{ color: colors.primary, textDecoration: 'none' }}
                       >
                         Batch: {pkg.batch_id}
                       </Link>
                     </div>
                   )}
-                  <details style={{ marginTop: 12 }}>
-                    <summary style={{ cursor: 'pointer', fontSize: 12, color: '#2563eb' }}>
+                  <details style={{ marginTop: spacing[3] }}>
+                    <summary style={{ cursor: 'pointer', fontSize: 12, color: colors.primary }}>
                       View Manifest
                     </summary>
                     <pre style={{
                       fontSize: 11,
-                      backgroundColor: '#f8fafc',
-                      padding: 12,
-                      borderRadius: 8,
-                      marginTop: 8,
+                      backgroundColor: colors.background,
+                      padding: spacing[3],
+                      borderRadius: borderRadius.base,
+                      marginTop: spacing[2],
                       overflow: 'auto',
                       maxHeight: 300,
                     }}>
                       {formatJson(pkg.manifest_payload)}
                     </pre>
                   </details>
-                  <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: colors.textMuted, marginTop: spacing[2] }}>
                     Created: {formatDate(pkg.created_at)}
                   </div>
                 </div>
@@ -307,7 +307,7 @@ export function TrainingArchiveClient() {
         </div>
       )}
 
-      <div style={{ marginTop: 24, fontSize: 12, color: colors.textMuted }}>
+      <div style={{ marginTop: spacing[6], fontSize: 12, color: colors.textMuted }}>
         Last updated: {new Date().toLocaleString()}
       </div>
     </main>

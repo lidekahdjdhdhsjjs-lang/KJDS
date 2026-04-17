@@ -37,12 +37,7 @@ class StoreRecord(Base):
     timezone: Mapped[str | None] = mapped_column(String(64), nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="active")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
-    )
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
 
 
 class StoreAuthorizationRecord(Base):
@@ -410,3 +405,12 @@ class TrainingArchivePackageRecord(Base):
     storage_uri: Mapped[str] = mapped_column(Text, nullable=False)
     manifest_payload: Mapped[str] = mapped_column(Text, nullable=False)  # JSON
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC))
+
+
+class SystemConfigRecord(Base):
+    __tablename__ = "system_config"
+
+    key: Mapped[str] = mapped_column(String(255), primary_key=True)
+    value: Mapped[str] = mapped_column(Text, default="")
+    encrypted: Mapped[str] = mapped_column(String(10), default="false")
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))

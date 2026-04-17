@@ -703,3 +703,122 @@ export async function fetchTrainingPackages(
   });
   return parseApiResponse<TrainingArchivePackage[]>(response, 'Failed to fetch training packages');
 }
+
+// ============================================================================
+// System Configuration Types & API Functions
+// ============================================================================
+
+export type LLMProviderInfo = {
+  name: string;
+  api_base: string;
+  models: string[];
+  protocol: string;
+};
+
+export type LLMConfig = {
+  provider: string;
+  api_base: string;
+  model: string;
+  enabled: boolean;
+  has_api_key: boolean;
+};
+
+export type ConfigStatus = {
+  llm: LLMConfig;
+  shopee: {
+    authorized: boolean;
+    shop_id: string;
+    shop_name: string;
+    has_credentials: boolean;
+  };
+  alibaba_1688: {
+    authorized: boolean;
+    has_credentials: boolean;
+  };
+  system_api_key_set: boolean;
+  ready_for_production: boolean;
+};
+
+export async function fetchConfigStatus(): Promise<ConfigStatus> {
+  const response = await fetch(`${API_BASE}/system-config/status`, { cache: 'no-store' });
+  return parseApiResponse<ConfigStatus>(response, 'Failed to fetch config status');
+}
+
+export async function fetchLLMConfig(): Promise<LLMConfig> {
+  const response = await fetch(`${API_BASE}/system-config/llm`, { cache: 'no-store' });
+  return parseApiResponse<LLMConfig>(response, 'Failed to fetch LLM config');
+}
+
+export async function saveLLMConfig(config: {
+  provider: string;
+  api_key: string;
+  api_base: string;
+  model: string;
+}): Promise<LLMConfig> {
+  const response = await fetch(`${API_BASE}/system-config/llm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+  return parseApiResponse<LLMConfig>(response, 'Failed to save LLM config');
+}
+
+export async function fetchLLMProviders(): Promise<Record<string, LLMProviderInfo>> {
+  const response = await fetch(`${API_BASE}/system-config/llm/providers`, { cache: 'no-store' });
+  return parseApiResponse<Record<string, LLMProviderInfo>>(response, 'Failed to fetch LLM providers');
+}
+
+export async function saveShopeeCredentials(clientId: string, clientSecret: string): Promise<{ authorized: boolean; has_credentials: boolean }> {
+  const response = await fetch(`${API_BASE}/system-config/shopee/credentials`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ client_id: clientId, client_secret: clientSecret }),
+  });
+  return parseApiResponse(response, 'Failed to save Shopee credentials');
+}
+
+export async function startShopeeAuthorization(): Promise<{ authorize_url: string; status: string }> {
+  const response = await fetch(`${API_BASE}/system-config/shopee/authorize`, {
+    method: 'POST',
+  });
+  return parseApiResponse(response, 'Failed to start Shopee authorization');
+}
+
+export async function disconnectShopee(): Promise<{ authorized: boolean }> {
+  const response = await fetch(`${API_BASE}/system-config/shopee/disconnect`, {
+    method: 'POST',
+  });
+  return parseApiResponse(response, 'Failed to disconnect Shopee');
+}
+
+export async function save1688Credentials(clientId: string, clientSecret: string): Promise<{ authorized: boolean; has_credentials: boolean }> {
+  const response = await fetch(`${API_BASE}/system-config/1688/credentials`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ client_id: clientId, client_secret: clientSecret }),
+  });
+  return parseApiResponse(response, 'Failed to save 1688 credentials');
+}
+
+export async function start1688Authorization(): Promise<{ authorize_url: string; status: string }> {
+  const response = await fetch(`${API_BASE}/system-config/1688/authorize`, {
+    method: 'POST',
+  });
+  return parseApiResponse(response, 'Failed to start 1688 authorization');
+}
+
+export async function disconnect1688(): Promise<{ authorized: boolean }> {
+  const response = await fetch(`${API_BASE}/system-config/1688/disconnect`, {
+    method: 'POST',
+  });
+  return parseApiResponse(response, 'Failed to disconnect 1688');
+}
+
+export async function saveSystemApiKey(apiKey: string): Promise<{ is_set: boolean }> {
+  const response = await fetch(`${API_BASE}/system-config/api-key`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ api_key: apiKey }),
+  });
+  return parseApiResponse(response, 'Failed to save API key');
+}

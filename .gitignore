@@ -14,6 +14,7 @@ backend/*.db
 backend/*.sqlite
 *.sqlite
 *.sqlite3
+dev.db
 
 # Secrets
 .env
@@ -24,3 +25,26 @@ backend/*.sqlite
 .DS_Store
 *.swp
 *.swo
+
+# Virtual environments
+venv_win/
+venv/
+.venv/
+
+# Logs
+*.log
+server.log
+
+# Test results
+frontend/test-results/
+frontend/playwright-report/
+
+# Build artifacts
+frontend/tsconfig.tsbuildinfo
+frontend/out/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.iml

@@ -1,0 +1,95 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: shopee_ai_ops
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      POSTGRES_DSN: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/shopee_ai_ops
+      REDIS_URL: redis://redis:6379/0
+      SESSION_SECRET_KEY: ${SESSION_SECRET_KEY}
+      PLATFORM_AUTH_STATE_SECRET: ${PLATFORM_AUTH_STATE_SECRET}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://your-domain.com}
+      SHOPEE_CLIENT_ID: ${SHOPEE_CLIENT_ID}
+      SHOPEE_CLIENT_SECRET: ${SHOPEE_CLIENT_SECRET}
+      SHOPEE_REDIRECT_URI: https://your-domain.com/api/v1/platform-connections/shopee/callback
+      ALIBABA_CLIENT_ID: ${ALIBABA_CLIENT_ID}
+      ALIBABA_CLIENT_SECRET: ${ALIBABA_CLIENT_SECRET}
+      ALIBABA_REDIRECT_URI: https://your-domain.com/api/v1/platform-connections/1688/callback
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      NEXT_PUBLIC_API_BASE: https://your-domain.com/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # To enable HTTPS, place cert.pem and key.pem in ./ssl/ directory, then uncomment
+      # the SSL server block in nginx.conf and remove the `:ro` flag above.
+      # See DEPLOYMENT.md section 6 for Let's Encrypt setup instructions.
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:

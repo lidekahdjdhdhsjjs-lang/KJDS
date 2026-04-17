@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ErrorDisplay, getUserFriendlyError } from './ErrorBoundary';
-import { colors, borderRadius, shadows } from '@/lib/design-system';
+import { colors, borderRadius, shadows, spacing } from '@/lib/design-system';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1';
 
@@ -65,22 +65,22 @@ type PublishTaskList = {
 };
 
 const SEVERITY_COLORS = {
-  P0: '#dc2626',
-  P1: '#f97316',
+  P0: colors.error,
+  P1: colors.warning,
   P2: '#facc15',
 };
 
 const STATUS_COLORS = {
-  open: '#ef4444',
-  acknowledged: '#f59e0b',
-  resolved: '#22c55e',
+  open: colors.error,
+  acknowledged: colors.warning,
+  resolved: colors.success,
 };
 
 const OAUTH_COLORS = {
-  connected: '#22c55e',
-  disconnected: '#94a3b8',
-  expired: '#f59e0b',
-  error: '#ef4444',
+  connected: colors.success,
+  disconnected: colors.textMuted,
+  expired: colors.warning,
+  error: colors.error,
 };
 
 async function fetchIncidents(): Promise<IncidentList> {
@@ -154,10 +154,7 @@ export function ExceptionsClient() {
 
   useEffect(() => {
     void loadData();
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(() => {
-      void loadData();
-    }, 30000);
+    const interval = setInterval(() => { void loadData(); }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -195,30 +192,30 @@ export function ExceptionsClient() {
 
   if (loading) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div style={{ padding: spacing[6], textAlign: 'center' }}>
         <p>Loading exceptions center...</p>
       </div>
     );
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'Arial, sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <main style={{ padding: spacing[6], fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[6] }}>
         <div>
           <h1 style={{ margin: 0 }}>Exceptions Center</h1>
-          <p style={{ margin: '8px 0 0', color: '#64748b' }}>
+          <p style={{ margin: `${spacing[2]}px 0 0`, color: colors.textSecondary }}>
             Monitor incidents, blocked tasks, and store health status
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: spacing[3], alignItems: 'center' }}>
           {p0Incidents.length > 0 && (
             <div
               style={{
-                padding: '8px 16px',
-                borderRadius: 8,
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                color: '#b91c1c',
+                padding: `${spacing[2]}px ${spacing[4]}px`,
+                borderRadius: borderRadius.base,
+                backgroundColor: colors.errorLight,
+                border: `1px solid ${colors.error}`,
+                color: colors.error,
                 fontWeight: 600,
               }}
             >
@@ -228,10 +225,10 @@ export function ExceptionsClient() {
           <Link
             href="/dashboard"
             style={{
-              padding: '8px 16px',
-              borderRadius: 8,
-              backgroundColor: '#f1f5f9',
-              color: '#475569',
+              padding: `${spacing[2]}px ${spacing[4]}px`,
+              borderRadius: borderRadius.base,
+              backgroundColor: colors.background,
+              color: colors.textSecondary,
               textDecoration: 'none',
               fontSize: 14,
               fontWeight: 600,
@@ -247,53 +244,53 @@ export function ExceptionsClient() {
       )}
 
       {/* Summary Cards */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: spacing[4], marginBottom: spacing[6] }}>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: openIncidents.length > 0 ? '1px solid #fecaca' : '1px solid #e2e8f0',
+            border: openIncidents.length > 0 ? `1px solid ${colors.error}` : `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Open Incidents</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: openIncidents.length > 0 ? '#dc2626' : '#22c55e' }}>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Open Incidents</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: openIncidents.length > 0 ? colors.error : colors.success }}>
             {openIncidents.length}
           </div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: blockedTasks.length > 0 ? '1px solid #fed7aa' : '1px solid #e2e8f0',
+            border: blockedTasks.length > 0 ? `1px solid ${colors.warning}` : `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Blocked Tasks</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: blockedTasks.length > 0 ? '#f97316' : '#22c55e' }}>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Blocked Tasks</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: blockedTasks.length > 0 ? colors.warning : colors.success }}>
             {blockedTasks.length}
           </div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
             border: `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Stores Monitored</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#2563eb' }}>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Stores Monitored</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.primary }}>
             {storeHealth.length}
           </div>
         </div>
       </section>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+      <div style={{ display: 'flex', gap: spacing[2], marginBottom: spacing[4] }}>
         {[
           { key: 'incidents', label: `Incidents (${incidents.length})` },
           { key: 'blocked', label: `Blocked Tasks (${blockedTasks.length})` },
@@ -303,13 +300,13 @@ export function ExceptionsClient() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key as typeof activeTab)}
             style={{
-              padding: '10px 20px',
-              borderRadius: 8,
-              border: activeTab === tab.key ? '2px solid #2563eb' : '1px solid #e2e8f0',
-              backgroundColor: activeTab === tab.key ? '#eff6ff' : '#fff',
+              padding: `${spacing[2] + 2}px ${spacing[5]}px`,
+              borderRadius: borderRadius.base,
+              border: activeTab === tab.key ? `2px solid ${colors.primary}` : `1px solid ${colors.border}`,
+              backgroundColor: activeTab === tab.key ? colors.primaryLight : colors.surface,
               cursor: 'pointer',
               fontWeight: 600,
-              color: activeTab === tab.key ? '#2563eb' : '#64748b',
+              color: activeTab === tab.key ? colors.primary : colors.textSecondary,
             }}
           >
             {tab.label}
@@ -319,15 +316,15 @@ export function ExceptionsClient() {
 
       {/* Content */}
       {activeTab === 'incidents' && (
-        <section style={{ display: 'grid', gap: 12 }}>
+        <section style={{ display: 'grid', gap: spacing[3] }}>
           {incidents.length === 0 ? (
             <div
               style={{
-                padding: 40,
+                padding: spacing[10],
                 textAlign: 'center',
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
-                border: '1px dashed #cbd5e1',
+                border: `1px dashed ${colors.borderDark}`,
                 color: colors.textSecondary,
               }}
             >
@@ -338,20 +335,20 @@ export function ExceptionsClient() {
               <article
                 key={incident.id}
                 style={{
-                  padding: 16,
+                  padding: spacing[4],
                   borderRadius: borderRadius.md,
                   backgroundColor: colors.surface,
-                  border: `1px solid ${incident.status === 'open' ? '#fecaca' : '#e2e8f0'}`,
-                  boxShadow: incident.severity === 'P0' && incident.status === 'open' ? '0 0 0 2px #dc2626' : 'none',
+                  border: `1px solid ${incident.status === 'open' ? colors.error : colors.border}`,
+                  boxShadow: incident.severity === 'P0' && incident.status === 'open' ? `0 0 0 2px ${colors.error}` : 'none',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing[4] }}>
                   <div>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                    <div style={{ display: 'flex', gap: spacing[2], alignItems: 'center', marginBottom: spacing[2] }}>
                       <span
                         style={{
-                          padding: '4px 8px',
-                          borderRadius: 4,
+                          padding: `${spacing[1]}px ${spacing[2]}px`,
+                          borderRadius: borderRadius.sm,
                           backgroundColor: SEVERITY_COLORS[incident.severity],
                           color: '#fff',
                           fontSize: 11,
@@ -362,8 +359,8 @@ export function ExceptionsClient() {
                       </span>
                       <span
                         style={{
-                          padding: '4px 8px',
-                          borderRadius: 4,
+                          padding: `${spacing[1]}px ${spacing[2]}px`,
+                          borderRadius: borderRadius.sm,
                           backgroundColor: STATUS_COLORS[incident.status],
                           color: '#fff',
                           fontSize: 11,
@@ -374,22 +371,22 @@ export function ExceptionsClient() {
                       </span>
                       <span style={{ fontSize: 14, fontWeight: 600 }}>{incident.incident_type}</span>
                     </div>
-                    <div style={{ color: colors.text, marginBottom: 8 }}>{incident.message}</div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>
+                    <div style={{ color: colors.text, marginBottom: spacing[2] }}>{incident.message}</div>
+                    <div style={{ fontSize: 12, color: colors.textSecondary }}>
                       Store: {incident.store_id} · Created: {formatDate(incident.created_at)}
                       {incident.resolved_at && ` · Resolved: ${formatDate(incident.resolved_at)}`}
                     </div>
                   </div>
                   {incident.status !== 'resolved' && (
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: spacing[2] }}>
                       {incident.status === 'open' && (
                         <button
                           onClick={() => handleAcknowledge(incident.id)}
                           disabled={actionLoading !== null}
                           style={{
-                            padding: '6px 12px',
-                            borderRadius: 6,
-                            backgroundColor: '#f59e0b',
+                            padding: `${spacing[1] + 2}px ${spacing[3]}px`,
+                            borderRadius: borderRadius.base,
+                            backgroundColor: colors.warning,
                             color: '#fff',
                             border: 'none',
                             cursor: 'pointer',
@@ -404,9 +401,9 @@ export function ExceptionsClient() {
                         onClick={() => handleResolve(incident.id)}
                         disabled={actionLoading !== null}
                         style={{
-                          padding: '6px 12px',
-                          borderRadius: 6,
-                          backgroundColor: '#22c55e',
+                          padding: `${spacing[1] + 2}px ${spacing[3]}px`,
+                          borderRadius: borderRadius.base,
+                          backgroundColor: colors.success,
                           color: '#fff',
                           border: 'none',
                           cursor: 'pointer',
@@ -426,15 +423,15 @@ export function ExceptionsClient() {
       )}
 
       {activeTab === 'blocked' && (
-        <section style={{ display: 'grid', gap: 12 }}>
+        <section style={{ display: 'grid', gap: spacing[3] }}>
           {blockedTasks.length === 0 ? (
             <div
               style={{
-                padding: 40,
+                padding: spacing[10],
                 textAlign: 'center',
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
-                border: '1px dashed #cbd5e1',
+                border: `1px dashed ${colors.borderDark}`,
                 color: colors.textSecondary,
               }}
             >
@@ -445,29 +442,29 @@ export function ExceptionsClient() {
               <article
                 key={task.id}
                 style={{
-                  padding: 16,
+                  padding: spacing[4],
                   borderRadius: borderRadius.md,
                   backgroundColor: colors.surface,
-                  border: '1px solid #fed7aa',
+                  border: `1px solid ${colors.warning}`,
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <Link
                       href={`/opportunities/${task.opportunity_item_id}`}
-                      style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
+                      style={{ color: colors.primary, textDecoration: 'none', fontWeight: 600 }}
                     >
                       {task.id}
                     </Link>
-                    <div style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: colors.textSecondary, marginTop: spacing[1] }}>
                       Item: {task.opportunity_item_id} · Store: {task.store_id} · Retries: {task.retry_count}
                     </div>
                     {task.last_error && (
-                      <div style={{ fontSize: 12, color: '#b91c1c', marginTop: 8 }}>
+                      <div style={{ fontSize: 12, color: colors.error, marginTop: spacing[2] }}>
                         Error: {task.last_error}
                       </div>
                     )}
-                    <div style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: colors.textSecondary, marginTop: spacing[1] }}>
                       Created: {formatDate(task.created_at)} · Updated: {formatDate(task.updated_at)}
                     </div>
                   </div>
@@ -479,15 +476,15 @@ export function ExceptionsClient() {
       )}
 
       {activeTab === 'health' && (
-        <section style={{ display: 'grid', gap: 12 }}>
+        <section style={{ display: 'grid', gap: spacing[3] }}>
           {storeHealth.length === 0 ? (
             <div
               style={{
-                padding: 40,
+                padding: spacing[10],
                 textAlign: 'center',
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
-                border: '1px dashed #cbd5e1',
+                border: `1px dashed ${colors.borderDark}`,
                 color: colors.textSecondary,
               }}
             >
@@ -498,7 +495,7 @@ export function ExceptionsClient() {
               <article
                 key={health.store_id}
                 style={{
-                  padding: 16,
+                  padding: spacing[4],
                   borderRadius: borderRadius.md,
                   backgroundColor: colors.surface,
                   border: `1px solid ${colors.border}`,
@@ -506,14 +503,14 @@ export function ExceptionsClient() {
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <div style={{ fontWeight: 600, marginBottom: 8 }}>{health.store_id}</div>
-                    <div style={{ display: 'grid', gap: 8 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 12, color: '#64748b' }}>OAuth:</span>
+                    <div style={{ fontWeight: 600, marginBottom: spacing[2] }}>{health.store_id}</div>
+                    <div style={{ display: 'grid', gap: spacing[2] }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: spacing[2] }}>
+                        <span style={{ fontSize: 12, color: colors.textSecondary }}>OAuth:</span>
                         <span
                           style={{
-                            padding: '4px 8px',
-                            borderRadius: 4,
+                            padding: `${spacing[1]}px ${spacing[2]}px`,
+                            borderRadius: borderRadius.sm,
                             backgroundColor: OAUTH_COLORS[health.oauth_status],
                             color: '#fff',
                             fontSize: 11,
@@ -522,22 +519,22 @@ export function ExceptionsClient() {
                           {health.oauth_status}
                         </span>
                       </div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>
+                      <div style={{ fontSize: 12, color: colors.textSecondary }}>
                         API Quota: {health.api_quota_remaining}/{health.api_quota_total} ({((health.api_quota_remaining / health.api_quota_total) * 100).toFixed(0)}%)
                       </div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>
+                      <div style={{ fontSize: 12, color: colors.textSecondary }}>
                         Error Rate: {(health.error_rate * 100).toFixed(1)}%
                       </div>
                       {health.last_error && (
-                        <div style={{ fontSize: 12, color: '#b91c1c' }}>Last Error: {health.last_error}</div>
+                        <div style={{ fontSize: 12, color: colors.error }}>Last Error: {health.last_error}</div>
                       )}
                       {health.last_success_at && (
-                        <div style={{ fontSize: 12, color: '#22c55e' }}>
+                        <div style={{ fontSize: 12, color: colors.success }}>
                           Last Success: {formatDate(health.last_success_at)}
                         </div>
                       )}
                       {health.risk_flags.length > 0 && (
-                        <div style={{ fontSize: 12, color: '#f97316' }}>
+                        <div style={{ fontSize: 12, color: colors.warning }}>
                           Flags: {health.risk_flags.join(', ')}
                         </div>
                       )}
@@ -550,7 +547,7 @@ export function ExceptionsClient() {
         </section>
       )}
 
-      <div style={{ marginTop: 24, fontSize: 12, color: colors.textMuted }}>
+      <div style={{ marginTop: spacing[6], fontSize: 12, color: colors.textMuted }}>
         Last updated: {new Date().toLocaleString()} · Auto-refreshes every 30 seconds
       </div>
     </main>

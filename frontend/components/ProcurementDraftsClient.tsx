@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { colors, borderRadius, shadows } from '@/lib/design-system';
-
+import { colors, borderRadius, shadows, spacing } from '@/lib/design-system';
 import { getUserFriendlyError } from './ErrorBoundary';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000/api/v1';
 
 type ApiResponse<T> = {
@@ -154,28 +154,28 @@ export function ProcurementDraftsClient() {
 
   if (loading && drafts.length === 0) {
     return (
-      <div style={{ padding: 24, textAlign: 'center' }}>
+      <div style={{ padding: spacing[6], textAlign: 'center' }}>
         <p>Loading procurement drafts...</p>
       </div>
     );
   }
 
   return (
-    <main style={{ padding: 24, fontFamily: 'Arial, sans-serif', backgroundColor: '#f8fafc', minHeight: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <main style={{ padding: spacing[6], fontFamily: 'Arial, sans-serif', backgroundColor: colors.background, minHeight: '100vh' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing[6] }}>
         <div>
           <h1 style={{ margin: 0 }}>Procurement Drafts</h1>
-          <p style={{ margin: '8px 0 0', color: '#64748b' }}>
+          <p style={{ margin: `${spacing[2]} 0 0`, color: colors.textSecondary }}>
             Manage procurement orders pending confirmation
           </p>
         </div>
         <Link
           href="/dashboard"
           style={{
-            padding: '8px 16px',
-            borderRadius: 8,
-            backgroundColor: '#f1f5f9',
-            color: '#475569',
+            padding: `${spacing[2]} ${spacing[4]}`,
+            borderRadius: borderRadius.base,
+            backgroundColor: colors.primaryLight,
+            color: colors.text,
             textDecoration: 'none',
             fontSize: 14,
             fontWeight: 600,
@@ -188,12 +188,12 @@ export function ProcurementDraftsClient() {
       {error && (
         <div
           style={{
-            padding: 16,
-            marginBottom: 16,
-            borderRadius: 8,
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            color: '#b91c1c',
+            padding: spacing[4],
+            marginBottom: spacing[4],
+            borderRadius: borderRadius.base,
+            backgroundColor: colors.errorLight,
+            border: `1px solid ${colors.error}`,
+            color: colors.error,
           }}
         >
           {error}
@@ -201,68 +201,68 @@ export function ProcurementDraftsClient() {
       )}
 
       {/* Summary Cards */}
-      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: spacing[4], marginBottom: spacing[6] }}>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
             border: `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Total Drafts</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#1e293b' }}>{drafts.length}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Total Drafts</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.text }}>{drafts.length}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #fef3c7',
+            border: `1px solid ${colors.warningLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Awaiting Confirmation</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#f59e0b' }}>{awaitingCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Awaiting Confirmation</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.warning }}>{awaitingCount}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px solid #d1fae5',
+            border: `1px solid ${colors.successLight}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Confirmed</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: '#22c55e' }}>{confirmedCount}</div>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Confirmed</div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: colors.success }}>{confirmedCount}</div>
         </div>
         <div
           style={{
-            padding: 20,
+            padding: spacing[5],
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
             border: `1px solid ${colors.border}`,
             boxShadow: shadows.base,
           }}
         >
-          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Pending Value</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#1e293b' }}>
+          <div style={{ fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Pending Value</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: colors.text }}>
             ¥{totalValue.toLocaleString()}
           </div>
         </div>
       </section>
 
       {/* Filter */}
-      <div style={{ marginBottom: 24 }}>
-        <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: 4 }}>Status</label>
+      <div style={{ marginBottom: spacing[6] }}>
+        <label style={{ display: 'block', fontSize: 12, color: colors.textSecondary, marginBottom: spacing[1] }}>Status</label>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           style={{
-            padding: '8px 12px',
-            borderRadius: 8,
+            padding: `${spacing[2]} ${spacing[3]}`,
+            borderRadius: borderRadius.base,
             border: `1px solid ${colors.border}`,
             backgroundColor: colors.surface,
             fontSize: 14,
@@ -282,37 +282,37 @@ export function ProcurementDraftsClient() {
       {drafts.length === 0 ? (
         <div
           style={{
-            padding: 40,
+            padding: spacing[10],
             textAlign: 'center',
             borderRadius: borderRadius.md,
             backgroundColor: colors.surface,
-            border: '1px dashed #cbd5e1',
+            border: `1px dashed ${colors.borderDark}`,
             color: colors.textSecondary,
           }}
         >
           No procurement drafts found. Drafts are created when opportunity items reach procurement stage.
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ display: 'grid', gap: spacing[3] }}>
           {drafts.map((draft) => (
             <article
               key={draft.id}
               style={{
-                padding: 16,
+                padding: spacing[4],
                 borderRadius: borderRadius.md,
                 backgroundColor: colors.surface,
                 border: `1px solid ${colors.border}`,
                 boxShadow: shadows.base,
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing[4] }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', gap: spacing[2], alignItems: 'center', marginBottom: spacing[2] }}>
                     <span
                       style={{
                         padding: '4px 10px',
-                        borderRadius: 6,
-                        backgroundColor: STATUS_COLORS[draft.status] || '#94a3b8',
+                        borderRadius: borderRadius.sm,
+                        backgroundColor: STATUS_COLORS[draft.status] || colors.textMuted,
                         color: '#fff',
                         fontSize: 12,
                         fontWeight: 700,
@@ -321,31 +321,31 @@ export function ProcurementDraftsClient() {
                       {draft.status.replace(/_/g, ' ')}
                     </span>
                   </div>
-                  <div style={{ marginBottom: 8 }}>
+                  <div style={{ marginBottom: spacing[2] }}>
                     <Link
                       href={`/opportunities/${draft.opportunity_item_id}`}
-                      style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
+                      style={{ color: colors.primary, textDecoration: 'none', fontWeight: 600 }}
                     >
                       Item: {draft.opportunity_item_id}
                     </Link>
                   </div>
-                  <div style={{ fontSize: 13, color: colors.text, display: 'grid', gap: 4 }}>
+                  <div style={{ fontSize: 13, color: colors.text, display: 'grid', gap: spacing[1] }}>
                     <div><strong>Supplier:</strong> {draft.supplier_ref}</div>
                     <div><strong>Quantity:</strong> {draft.qty} units</div>
                     <div><strong>Unit Price:</strong> ¥{draft.purchase_price.toFixed(2)}</div>
                     <div><strong>Total:</strong> ¥{(draft.purchase_price * draft.qty).toFixed(2)}</div>
                   </div>
                   {draft.sku_payload && (
-                    <details style={{ marginTop: 12 }}>
-                      <summary style={{ cursor: 'pointer', fontSize: 12, color: '#2563eb' }}>
+                    <details style={{ marginTop: spacing[3] }}>
+                      <summary style={{ cursor: 'pointer', fontSize: 12, color: colors.primary }}>
                         View SKU Details
                       </summary>
                       <pre style={{
                         fontSize: 11,
-                        backgroundColor: '#f8fafc',
-                        padding: 12,
-                        borderRadius: 8,
-                        marginTop: 8,
+                        backgroundColor: colors.background,
+                        padding: spacing[3],
+                        borderRadius: borderRadius.base,
+                        marginTop: spacing[2],
                         overflow: 'auto',
                       }}>
                         {formatJson(draft.sku_payload)}
@@ -353,24 +353,24 @@ export function ProcurementDraftsClient() {
                     </details>
                   )}
                   {draft.invalid_reason && (
-                    <div style={{ marginTop: 8, padding: 8, borderRadius: 6, backgroundColor: '#fef2f2', color: '#b91c1c', fontSize: 12 }}>
+                    <div style={{ marginTop: spacing[2], padding: spacing[2], borderRadius: borderRadius.sm, backgroundColor: colors.errorLight, color: colors.error, fontSize: 12 }}>
                       <strong>Invalidation Reason:</strong> {draft.invalid_reason}
                     </div>
                   )}
-                  <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: colors.textMuted, marginTop: spacing[2] }}>
                     Created: {formatDate(draft.created_at)} · Updated: {formatDate(draft.updated_at)}
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: spacing[2] }}>
                   {(draft.status === 'draft' || draft.status === 'awaiting_confirmation') && (
                     <>
                       <button
                         onClick={() => handleConfirm(draft.id)}
                         disabled={actionLoading !== null}
                         style={{
-                          padding: '8px 16px',
-                          borderRadius: 6,
-                          backgroundColor: '#22c55e',
+                          padding: `${spacing[2]} ${spacing[4]}`,
+                          borderRadius: borderRadius.sm,
+                          backgroundColor: colors.success,
                           color: '#fff',
                           border: 'none',
                           cursor: 'pointer',
@@ -384,9 +384,9 @@ export function ProcurementDraftsClient() {
                         onClick={() => setShowInvalidateModal(draft.id)}
                         disabled={actionLoading !== null}
                         style={{
-                          padding: '8px 16px',
-                          borderRadius: 6,
-                          backgroundColor: '#ef4444',
+                          padding: `${spacing[2]} ${spacing[4]}`,
+                          borderRadius: borderRadius.sm,
+                          backgroundColor: colors.error,
                           color: '#fff',
                           border: 'none',
                           cursor: 'pointer',
@@ -426,14 +426,14 @@ export function ProcurementDraftsClient() {
             style={{
               backgroundColor: colors.surface,
               borderRadius: borderRadius.md,
-              padding: 24,
+              padding: spacing[6],
               maxWidth: 400,
               width: '100%',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 style={{ margin: '0 0 16px' }}>Invalidate Draft</h3>
-            <p style={{ color: colors.textSecondary, marginBottom: 16 }}>
+            <h3 style={{ margin: `0 0 ${spacing[4]}` }}>Invalidate Draft</h3>
+            <p style={{ color: colors.textSecondary, marginBottom: spacing[4] }}>
               Please provide a reason for invalidating this procurement draft:
             </p>
             <textarea
@@ -442,25 +442,25 @@ export function ProcurementDraftsClient() {
               placeholder="e.g., Price increased, profit margin compromised"
               style={{
                 width: '100%',
-                padding: 12,
-                borderRadius: 8,
+                padding: spacing[3],
+                borderRadius: borderRadius.base,
                 border: `1px solid ${colors.border}`,
                 fontSize: 14,
                 minHeight: 100,
                 resize: 'vertical',
               }}
             />
-            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: spacing[2], marginTop: spacing[4], justifyContent: 'flex-end' }}>
               <button
                 onClick={() => {
                   setShowInvalidateModal(null);
                   setInvalidateReason('');
                 }}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: 6,
-                  backgroundColor: '#f1f5f9',
-                  color: '#475569',
+                  padding: `${spacing[2]} ${spacing[4]}`,
+                  borderRadius: borderRadius.sm,
+                  backgroundColor: colors.primaryLight,
+                  color: colors.text,
                   border: 'none',
                   cursor: 'pointer',
                   fontWeight: 600,
@@ -472,9 +472,9 @@ export function ProcurementDraftsClient() {
                 onClick={() => handleInvalidate(showInvalidateModal)}
                 disabled={actionLoading !== null || !invalidateReason.trim()}
                 style={{
-                  padding: '8px 16px',
-                  borderRadius: 6,
-                  backgroundColor: '#ef4444',
+                  padding: `${spacing[2]} ${spacing[4]}`,
+                  borderRadius: borderRadius.sm,
+                  backgroundColor: colors.error,
                   color: '#fff',
                   border: 'none',
                   cursor: 'pointer',
@@ -489,7 +489,7 @@ export function ProcurementDraftsClient() {
         </div>
       )}
 
-      <div style={{ marginTop: 24, fontSize: 12, color: colors.textMuted }}>
+      <div style={{ marginTop: spacing[6], fontSize: 12, color: colors.textMuted }}>
         Last updated: {new Date().toLocaleString()}
       </div>
     </main>
