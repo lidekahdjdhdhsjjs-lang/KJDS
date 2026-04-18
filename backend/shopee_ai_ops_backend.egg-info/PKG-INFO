@@ -13,6 +13,8 @@ Requires-Dist: alembic<2.0,>=1.13
 Requires-Dist: aiosqlite<1.0,>=0.20
 Requires-Dist: playwright<2.0,>=1.40
 Requires-Dist: aiofiles<25.0,>=23.0
+Requires-Dist: cryptography<45.0,>=43.0
+Requires-Dist: httpx<1.0,>=0.27
 Provides-Extra: dev
 Requires-Dist: pytest<9.0,>=8.3; extra == "dev"
 Requires-Dist: httpx<1.0,>=0.27; extra == "dev"

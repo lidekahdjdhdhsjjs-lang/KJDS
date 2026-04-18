@@ -26,36 +26,50 @@ from app.api.routes.pipeline import router as pipeline_router
 from app.api.routes.system_config import router as system_config_router
 
 router = APIRouter()
+
+# Health check (no prefix for easy access)
 router.include_router(health_router)
-router.include_router(dashboard_router, prefix="/api/v1/dashboard", tags=["dashboard"])
-router.include_router(platform_connections_router, prefix="/api/v1/platform-connections", tags=["platform-connections"])
-router.include_router(workflow_router, prefix="/api/v1", tags=["workflow"])
+
+# API v1 routes
+api_v1 = APIRouter(prefix="/api/v1")
+
+# Dashboard
+api_v1.include_router(dashboard_router, prefix="/dashboard", tags=["dashboard"])
+
+# Platform connections
+api_v1.include_router(platform_connections_router, prefix="/platform-connections", tags=["platform-connections"])
+
+# Workflow
+api_v1.include_router(workflow_router, tags=["workflow"])
 
 # Sprint 2 routes
-router.include_router(batches_router, prefix="/api/v1")
-router.include_router(opportunities_router, prefix="/api/v1")
-router.include_router(publish_tasks_router, prefix="/api/v1")
-router.include_router(procurement_drafts_router, prefix="/api/v1")
-router.include_router(agent_runs_router, prefix="/api/v1")
+api_v1.include_router(batches_router, tags=["batches"])
+api_v1.include_router(opportunities_router, tags=["opportunities"])
+api_v1.include_router(publish_tasks_router, tags=["publish-tasks"])
+api_v1.include_router(procurement_drafts_router, tags=["procurement-drafts"])
+api_v1.include_router(agent_runs_router, tags=["agent-runs"])
 
 # Exceptions center routes
-router.include_router(incidents_router, prefix="/api/v1")
-router.include_router(store_health_router, prefix="/api/v1")
+api_v1.include_router(incidents_router, tags=["incidents"])
+api_v1.include_router(store_health_router, tags=["store-health"])
 
 # Demand signals routes
-router.include_router(demand_signals_router, prefix="/api/v1")
+api_v1.include_router(demand_signals_router, tags=["demand-signals"])
 
 # Training archive routes
-router.include_router(training_packages_router, prefix="/api/v1")
+api_v1.include_router(training_packages_router, tags=["training-packages"])
 
 # Feedback records routes
-router.include_router(feedback_records_router, prefix="/api/v1")
+api_v1.include_router(feedback_records_router, tags=["feedback-records"])
 
 # Sprint 3: Browser Automation routes
-router.include_router(browser_automation_router, prefix="/api/v1")
+api_v1.include_router(browser_automation_router, tags=["browser-automation"])
 
 # Auto Pipeline routes
-router.include_router(pipeline_router, prefix="/api/v1")
+api_v1.include_router(pipeline_router, tags=["pipeline"])
 
 # System Configuration routes
-router.include_router(system_config_router, prefix="/api/v1")
+api_v1.include_router(system_config_router, tags=["system-config"])
+
+# Include all API v1 routes
+router.include_router(api_v1)

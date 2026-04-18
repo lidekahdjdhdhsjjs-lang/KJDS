@@ -21,6 +21,9 @@ shopee_ai_ops_backend.egg-info/dependency_links.txt
 shopee_ai_ops_backend.egg-info/requires.txt
 shopee_ai_ops_backend.egg-info/top_level.txt
 tests/test_api.py
+tests/test_crypto_hmac_ratelimit.py
+tests/test_pipeline.py
+tests/test_security.py
 tests/test_sprint2_additional_apis.py
 tests/test_sprint2_batches.py
 tests/test_sprint2_integration.py
